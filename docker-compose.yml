@@ -1,0 +1,11 @@
+version: '3'
+services:
+  backend:
+    image: cookierocket/doodling-back
+    container_name: "doodling-back"
+    restart: "always"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3065:3065"
