@@ -12,4 +12,4 @@ services:
     volumes:
       # hot reload를 위해 mount
       - "/app/node_modules"
-      - "./backend:/app"
+      - "./:/usr/src/app"
