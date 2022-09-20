@@ -1,16 +1,16 @@
 const express = require('express');
 const dotenv = require('dotenv');
-// const db = require('./models');
+const db = require('./models');
 const postRouter = require('./routes/post');
 
 dotenv.config();
 
 const app = express();
-// db.sequelize.sync()
-//     .then(() => {
-//         console.log('DB Connected...');
-//     })
-//     .catch(console.error);
+db.sequelize.sync()
+    .then(() => {
+        console.log('DB Connected...');
+    })
+    .catch(console.error);
 
 app.get('/', (req, res) => {
     res.send('Welcome to Doodling API!');
