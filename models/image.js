@@ -14,8 +14,11 @@ module.exports = class Image extends Model {
             charset: 'utf8',
             collate: 'utf8_general_ci',
             sequelize
-        })
+        });
     };
     static associate(db) {
+        db.Image.belongsTo(db.Post);
+        db.Image.belongsTo(db.Ads);
+        db.Image.belongsTo(db.Category);
     };
 };

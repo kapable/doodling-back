@@ -19,8 +19,9 @@ module.exports = class Ads extends Model {
             charset: 'utf8',
             collate: 'utf8_general_ci',
             sequelize
-        })
+        });
     };
     static associate(db) {
+        db.Ads.hasOne(db.Image);
     };
 };

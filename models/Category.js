@@ -19,8 +19,10 @@ module.exports = class Category extends Model {
             charset: 'utf8',
             collate: 'utf8_general_ci',
             sequelize
-        })
-    }
+        });
+    };
     static associate(db) {
+        db.Category.hasOne(db.Image);
+        db.Category.hasMany(db.SubCategory);
     };
 };

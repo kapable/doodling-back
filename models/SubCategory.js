@@ -19,8 +19,10 @@ module.exports = class SubCategory extends Model {
             charset: 'utf8',
             collate: 'utf8_general_ci',
             sequelize
-        })
-    }
+        });
+    };
     static associate(db) {
+        db.SubCategory.belongsTo(db.Category);
+        db.SubCategory.hasMany(db.Post);
     };
 };

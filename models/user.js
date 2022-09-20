@@ -64,5 +64,11 @@ module.exports = class User extends Model {
         });
     };
     static associate(db) {
+        db.User.hasMany(db.Post);
+        db.User.hasMany(db.Comment);
+        db.User.belongsToMany(db.Post, { through: "PostLike", as: "Liked" });
+        db.User.belongsToMany(db.Post, { through: "PostLink", as: "Linked" });
+        db.User.belongsToMany(db.Post, { through: "PostView", as: "Viewed" });
+        db.User.belongsToMany(db.Comment, { through: "CommentLike", as: "Liked" });
     };
 };
