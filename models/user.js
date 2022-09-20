@@ -40,7 +40,7 @@ module.exports = class User extends Model {
                 allowNull: false,
             },
             points: {
-                type: DataTypes.NUMBER,
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
             grade: {
@@ -52,7 +52,7 @@ module.exports = class User extends Model {
                 allowNull: true,
             },
             birthDate: {
-                type: DataTypes.DATEONLY,
+                type: DataTypes.DATE,
                 allowNull: true,
             },
         }, {
@@ -66,9 +66,11 @@ module.exports = class User extends Model {
     static associate(db) {
         db.User.hasMany(db.Post);
         db.User.hasMany(db.Comment);
-        db.User.belongsToMany(db.Post, { through: "PostLike", as: "Liked" });
-        db.User.belongsToMany(db.Post, { through: "PostLink", as: "Linked" });
-        db.User.belongsToMany(db.Post, { through: "PostView", as: "Viewed" });
-        db.User.belongsToMany(db.Comment, { through: "CommentLike", as: "Liked" });
+        db.User.belongsToMany(db.Post, { through: "PostLike", as: "PostLiked" });
+        db.User.belongsToMany(db.Post, { through: "PostLink", as: "PostLinked" });
+        db.User.belongsToMany(db.Post, { through: "PostView", as: "PostViewed" });
+        db.User.belongsToMany(db.Comment, { through: "CommentLike", as: "CommentLiked" });
+        db.User.belongsToMany(db.User, { through: "Follow", as: "Followers", foreignKey: "FollowingId" });
+        db.User.belongsToMany(db.User, { through: "Follow", as: "Followings", foreignKey: "FollowerId" });
     };
 };
