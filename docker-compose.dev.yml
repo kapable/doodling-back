@@ -3,11 +3,7 @@ services:
   backend:
     image: cookierocket/doodling-back-dev
     environment:
-      RDS_USERNAME: ${RDS_USERNAME}
-      RDS_HOST: ${RDS_HOST}
-      RDS_PASSWORD: ${RDS_PASSWORD}
-      RDS_DATABASE: ${RDS_DATABASE}
-      RDS_PORT: ${RDS_PORT}
+      DB_PASSWORD: ${DB_PASSWORD}
     container_name: "doodling-back-dev"
     restart: "always"
     build:
