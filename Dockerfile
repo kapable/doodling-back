@@ -2,9 +2,9 @@ FROM node:lts-alpine
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
-RUN npm install -g pm2 
+RUN npm install -g pm2 cross-env
 ENV NODE_ENV production
 COPY . .
 EXPOSE 3065
-CMD ["pm2-runtime", "start", "app.js"]
+CMD ["sh", "-c", "cross-env", "pm2-runtime", "start", "app.js"]
 # CMD ["sudo npm start"]
