@@ -6,5 +6,5 @@ RUN npm install -g pm2
 ENV NODE_ENV production
 COPY . .
 EXPOSE 3065
-CMD ["pm2-runtime", "start", "app.js"]
-# CMD ["npm run start"]
+# CMD ["pm2-runtime", "start", "app.js"]
+CMD ["sudo npm start"]
