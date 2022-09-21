@@ -25,4 +25,4 @@ module.exports = {
         "dialect": "mysql",
         "port":process.env.RDS_PORT
     }
-}
+};
