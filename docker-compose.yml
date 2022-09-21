@@ -2,6 +2,8 @@ version: '3'
 services:
   backend:
     image: cookierocket/doodling-back
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
     container_name: "doodling-back"
     restart: "always"
     build:

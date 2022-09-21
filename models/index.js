@@ -1,5 +1,5 @@
 const ads = require('./ads');
-// const category = require('./category');
+const category = require('./category');
 const subCategory = require('./subCategory');
 const comment = require('./comment');
 const image = require('./image');
@@ -14,7 +14,7 @@ const db = {};
 const sequelize = new Sequelize(config.database, config.username, config.password, config);
 
 db.Ads = ads;
-// db.Category = category;
+db.Category = category;
 db.SubCategory = subCategory;
 db.Comment = comment;
 db.Image = image;
