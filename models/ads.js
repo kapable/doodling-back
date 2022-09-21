@@ -22,6 +22,6 @@ module.exports = class Ads extends Model {
         });
     };
     static associate(db) {
-        // db.Ads.hasOne(db.Image);
+        db.Ads.hasOne(db.Image);
     };
 };
