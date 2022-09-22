@@ -26,9 +26,17 @@ dotenv.config();
  *            application/x-www-form-urlencoded:
  *                schema:
  *                   $ref: '#/components/schemas/joinform'
- *      response:
+ *      responses:
  *          200:
- *              description: "회원가입에 성공했습니다!"
+ *              description: "SIGN UP SUCCESS"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      message:
+ *                          type: string
+ *                          example: "회원가입에 성공했습니다."
  */
 router.post('/', async (req, res, next) => {
     try {
@@ -81,9 +89,26 @@ router.post('/', async (req, res, next) => {
  *            application/x-www-form-urlencoded:
  *                schema:
  *                   $ref: '#/components/schemas/loginform'
- *      response:
+ *      responses:
  *          200:
  *              description: "USER INFO"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      id:
+ *                          type: number
+ *                          example: 1
+ *                      email:
+ *                          type: string
+ *                          example: abc@abc.com
+ *                      nickname:
+ *                          type: string
+ *                          example: doodling
+ *                      mbti:
+ *                          type: string
+ *                          example: ISTJ
  */
 router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
@@ -123,7 +148,7 @@ router.post('/login', (req, res, next) => {
  *      requestBody:
  *          description: Logout
  *          required: false
- *      response:
+ *      responses:
  *          200:
  *              description: "로그아웃 되었습니다!"
  */
