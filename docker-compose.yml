@@ -8,6 +8,9 @@ services:
       RDS_PASSWORD: ${RDS_PASSWORD}
       RDS_DATABASE: ${RDS_DATABASE}
       RDS_PORT: ${RDS_PORT}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      SERVICE_FRONT_URL: ${SERVICE_FRONT_URL}
+      SERVICE_FRONT_URL2: ${SERVICE_FRONT_URL2}
     container_name: "doodling-back"
     restart: "always"
     build:

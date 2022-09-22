@@ -6,3 +6,5 @@ mysql-apt-config*.*
 mysql-apt-config*.*.*
 out
 .DS_Store
+docker-compose.dev.yml
+Dockerfile.dev
