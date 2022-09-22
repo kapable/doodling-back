@@ -1,0 +1,70 @@
+const swaggerUi = require('swagger-ui-express');
+const swaggereJsdoc = require('swagger-jsdoc');
+
+const options = {
+	definition: {
+		openapi: '3.0.0',
+		info: {
+			title: 'DOODLING API',
+			version: '1.0.0',
+		},
+		servers: [
+			{
+				url: 'https://api.doodling.kr/',
+				description: 'doodling'
+			},
+			{
+				url: 'http://localhost:3065',
+				description: 'localhost'
+			}
+		],
+		components: {
+			schemas: {
+				joinform: {
+					type: 'object',
+                    properties: {
+                        email: {
+                            type: 'string',
+                            example: 'abc@abc.com'
+                        },
+                        nickname: {
+                            type: 'string',
+                            example: 'John snow'
+                        },
+                        mbti: {
+                            type: 'string',
+                            example: 'ISTJ'
+                        },
+                        password: {
+                            type: 'string',
+                            example: 'password1234!'
+                        },
+					},
+                required: ['email', 'nickname', 'mbti', 'password' ]
+				},
+				loginform: {
+					type: 'object',
+                    properties: {
+                        email: {
+                            type: 'string',
+                            example: 'abc@abc.com'
+                        },
+                        password: {
+                            type: 'string',
+                            example: 'password1234!'
+                        },
+					},
+                required: ['email', 'password' ]
+				},
+			}
+		}
+	},
+	apis: ['./routes/*.js'], // files containing annotations as above
+};
+
+const specs = swaggereJsdoc(options);
+
+module.exports = {
+    swaggerUi,
+    specs
+};
