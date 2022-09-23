@@ -56,6 +56,28 @@ const options = {
 					},
                 required: ['email', 'password' ]
 				},
+                uploadform: {
+					type: 'object',
+                    properties: {
+                        title: {
+                            type: 'string',
+                            example: 'Sample Title'
+                        },
+                        text: {
+                            type: 'string',
+                            example: '<p>Sample contents</p>'
+                        },
+                        subCategory: {
+                            type: 'integer',
+                            example: '3'
+                        },
+                        userId: {
+                            type: 'integer',
+                            example: '1'
+                        },
+					},
+                required: ['title', 'text', 'subCategory', 'userId' ]
+				},
 			}
 		}
 	},

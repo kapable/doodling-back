@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const { User, Post, Comment } = require('../models');
 const passport = require('passport');
 const router = express.Router();
+const { isLoggedIn, isNotLoggedIn } = require('./middlewares');
 
 dotenv.config();
 
@@ -156,6 +157,55 @@ router.post(`/logout`, (req, res) => {
     req.logout();
     req.session.destroy();
     res.send('로그아웃 되었습니다!');
+});
+
+// GET USER // GET /user
+/**
+ * @openapi
+ * /user:
+ *   get:
+ *     tags:
+ *       - user
+ *     description: Get the User Info
+ *     summary: Get the User Info
+ *     security:
+ *       - oAuthSample: []
+ *     responses:
+ *       200:
+ *              description: "USER INFO"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      id:
+ *                          type: number
+ *                          example: 1
+ *                      admin:
+ *                          type: boolean
+ *                          example: true
+ *                      adsAdmin:
+ *                          type: boolean
+ *                          example: false
+ *                      enabled:
+ *                          type: boolean
+ *                          example: true
+ */
+router.get('/', async (req, res, next) => {
+    try {
+        if(req.user)  {
+            const fullUserWithoutPassword = await User.findOne({
+                where: { id: req.user.id },
+                attributes: ['id', 'admin', 'adsAdmin', 'enabled'],
+            });
+            res.status(200).json(fullUserWithoutPassword);
+        } else {
+            res.status(200).json(null);
+        };
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
 });
 
 module.exports = router;
