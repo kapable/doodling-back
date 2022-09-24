@@ -207,4 +207,85 @@ router.get('/', async (req, res, next) => {
     };
 });
 
+// CHANGE NICKNAME // PATCH /user/nickname
+/**
+ * @openapi
+ * /user/nickname:
+ *   patch:
+ *     tags:
+ *       - user
+ *     description: Change User Nickname
+ *     summary: Change User Nickname
+ *     responses:
+ *       200:
+ *              description: "CHANGE USER NICKNAME"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      categoryId:
+ *                          type: integer
+ *                          example: 1
+ *                      enabled:
+ *                          type: BOOLEAN
+ *                          example: true
+ * 
+ */
+router.patch('/nickname', async (req, res, next) => {
+    try {
+        User.update({
+            nickname: req.body.nickname,
+        }, {
+            where: {
+                id: req.user.id
+            }
+        });
+        res.status(200).json({ nickname: req.body.nickname });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+// CHANGE DESCRIPTION // PATCH /user/description
+/**
+ * @openapi
+ * /user/description:
+ *   patch:
+ *     tags:
+ *       - user
+ *     description: Change User Description
+ *     summary: Change User Description
+ *     responses:
+ *       200:
+ *              description: "CHANGE USER DESCRIPTION"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      categoryId:
+ *                          type: integer
+ *                          example: 1
+ *                      enabled:
+ *                          type: BOOLEAN
+ *                          example: true
+ * 
+ */
+router.patch('/description', async (req, res, next) => {
+    try {
+        User.update({
+            description: req.body.description,
+        }, {
+            where: {
+                id: req.user.id
+            }
+        });
+        res.status(200).json({ description: req.body.description });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 module.exports = router;

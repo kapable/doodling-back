@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
-const { Ads, Category, Comment, Image, Post, SubCategory, User  } = require('../models');
+const { Comment, Post, SubCategory, User  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
@@ -61,20 +61,16 @@ const router = express.Router();
 router.post('/', async (req, res, next) => {
     try {
         const post = await Post.create({
-            UserId: parseInt(req.body.userId),
+            UserId: parseInt(req.body.userId, 10),
             title: req.body.title,
             text: req.body.text,
-            SubCategoryId: req.body.subCategory,
+            SubCategoryId: req.body.subCategoryId,
             enabled: true,
-        });
-        const subCategory = await SubCategory.findOne({
-            where: { label: req.body.subCategory }
         });
         const fullPost = await Post.findOne({
             where: { id: post.id },
             include: [{
-                model: Category,
-                where: { id: subCategory.CategoryId },
+                model: SubCategory,
                 attributes: ['id', 'label'],
             }, {
                 model: User,
@@ -89,6 +85,55 @@ router.post('/', async (req, res, next) => {
 });
 
 // ADD COMMENT // POST /1/comment
+/**
+ * @openapi
+ * /:postId/post:
+ *  post:
+ *      tags:
+ *          - post
+ *      description: Upload a Comment
+ *      summary: Upload a Comment
+ *      requestBody:
+ *          description: Upload a Comment
+ *          required: true
+ *          content:
+ *            application/json:
+ *                schema:
+ *                   $ref: '#/components/schemas/uploadform'
+ *            application/x-www-form-urlencoded:
+ *                schema:
+ *                   $ref: '#/components/schemas/uploadform'
+ *      responses:
+ *          200:
+ *              description: "POST UPLOAD SUCCESS"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      {
+ *                          title: {
+ *                                      type: 'string',
+ *                                      example: 'Sample Title'
+ *                                  },
+ *                          text: {
+ *                                      type: 'string',
+ *                                      example: '<p>Sample contents</p>'
+ *                                  },
+ *                          subCategory: {
+ *                                      type: 'integer',
+ *                                      example: 3
+ *                                  },
+ *                          userId: {
+ *                                      type: 'integer',
+ *                                      example: 1
+ *                                  },
+ *                          category: {
+ *                                      type: 'integer',
+ *                                      example: 2
+ *                                  },
+ *                      }
+ */
 router.post('/:postId/comment', async (req, res, next) => {
     try {
         const post = await Post.findOne({
@@ -96,11 +141,11 @@ router.post('/:postId/comment', async (req, res, next) => {
         });
         if(!post) {
             return res.status(403).send('존재하지 않는 게시글입니다 ㅠㅠ');
-        }
+        };
         const comment = await Comment.create({
             text: req.body.text,
             UserId: req.body.userId,
-            PostId: parseInt(req.params.postId),
+            PostId: parseInt(req.params.postId, 10),
         });
         const fullComment = await Comment.findOne({
             where: { id: comment.id },
