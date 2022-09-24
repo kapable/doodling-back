@@ -12,6 +12,11 @@ module.exports = class SubCategory extends Model {
             enabled: {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
+            },
+            order: {
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                unique: true,
             }
         }, {
             modelName: 'SubCategory',

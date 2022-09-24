@@ -1,31 +1,31 @@
 const express = require('express');
-const { Category } = require('../models');
+const { SubCategory } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 const { Op } = require("sequelize");
 
-// ADD CATEGORY // POST /category
+// ADD SUBCATEGORY // POST /subCategory
 /**
  * @openapi
- * /category:
+ * /subCategory:
  *  post:
  *      tags:
- *          - category
- *      description: Create a new category
- *      summary: Create a new category
+ *          - subCategory
+ *      description: Create a new subCategory
+ *      summary: Create a new subCategory
  *      requestBody:
- *          description: Create a new category
+ *          description: Create a new subCategory
  *          required: true
  *          content:
  *            application/json:
  *                schema:
- *                   $ref: '#/components/schemas/categoryform'
+ *                   $ref: '#/components/schemas/subcategoryform'
  *            application/x-www-form-urlencoded:
  *                schema:
- *                   $ref: '#/components/schemas/categoryform'
+ *                   $ref: '#/components/schemas/subcategoryform'
  *      responses:
  *          200:
- *              description: "ADD CATEGORY SUCCESS"
+ *              description: "ADD SUBCATEGORY SUCCESS"
  *              content:
  *                application/json:
  *                  schema:
@@ -33,79 +33,87 @@ const { Op } = require("sequelize");
  *                    properties:
  *                      message:
  *                          type: string
- *                          example: "카테고리 생성에 성공했습니다."
+ *                          example: "서브 카테고리 생성에 성공했습니다."
  */
 router.post('/', async (req, res, next) => {
     try {
-        const exCategory = await Category.findOne({
+        const exSubCategory = await SubCategory.findOne({
             where: { label: req.body.label }
         });
-        if(exCategory) {
-            return res.status(403).send("이미 존재하는 카테고리입니다.");
+        if(!req.body.categoryId) {
+            return res.status(403).send("상위 카테고리 아이디가 필요합니다.");
         };
-        await Category.create({
+        if(exSubCategory) {
+            return res.status(403).send("이미 존재하는 서브 카테고리입니다.");
+        };
+        await SubCategory.create({
             label: req.body.label,
+            CategoryId: req.body.categoryId,
             enabled: false,
         });
-        const categories = await Category.findAll({
+        const subCategories = await SubCategory.findAll({
             order: [
                 ['id', 'ASC']
             ],
+            where: {
+                CategoryId: req.body.categoryId
+            },
         });
-        res.status(201).json(categories);
+        res.status(201).json(subCategories);
     } catch (error) {
         console.error(error);
         next(error);
     };
 });
 
-// LOAD CATEGORIES // GET /category
+// LOAD SUBCATEGORIES // GET /subCategory
 /**
  * @openapi
- * /category:
+ * /subCategory:
  *   get:
  *     tags:
- *       - category
- *     description: Get the categories
- *     summary: Get the categories
+ *       - subCategory
+ *     description: Get the subCategories of a category
+ *     summary: Get the subCategories of a category
  *     responses:
  *       200:
- *              description: "CATEGORIES LIST"
+ *              description: "SUBCATEGORIES LIST"
  *              content:
  *                application/json:
  *                  schema:
  *                    type: 'object'
  *                    properties:
- *                      categories:
+ *                      subCategories:
  *                          type: array
- *                          example: ['MBTI', 'TOP100']
+ *                          example: ['전체', '이슈']
  */
 router.get('/', async (req, res, next) => {
     try {
-        const categories = await Category.findAll({
+        const subCategories = await SubCategory.findAll({
+            where: { CategoryId: req.body.categoryId },
             order: [
                 ['id', 'ASC']
-            ],
+            ]
         });
-        res.status(200).send(categories);
+        res.status(200).send(subCategories);
     } catch (error) {
         console.error(error);
         next(error);
-    }
+    };
 });
 
-// SET CATEGORY ENABLE // patch /Category
+// SET SUBCATEGORY ENABLE // patch /subCategory
 /**
  * @openapi
- * /category:
+ * /subCategory:
  *   patch:
  *     tags:
- *       - category
- *     description: Update a Category Enabled
- *     summary: Update a Category Enabled
+ *       - subCategory
+ *     description: Update a subCategory Enabled
+ *     summary: Update a subCategory Enabled
  *     responses:
  *       200:
- *              description: "ENABLING A CATEGORY"
+ *              description: "ENABLING A SUBCATEGORY"
  *              content:
  *                application/json:
  *                  schema:
@@ -114,6 +122,9 @@ router.get('/', async (req, res, next) => {
  *                      categoryId:
  *                          type: integer
  *                          example: 1
+ *                      subCategoryId:
+ *                          type: integer
+ *                          example: 3
  *                      enabled:
  *                          type: BOOLEAN
  *                          example: true
@@ -122,15 +133,17 @@ router.get('/', async (req, res, next) => {
 router.patch('/', async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
-        let orders = await Category.findAll({
+        let orders = await SubCategory.findAll({
             attributes: ['order']
+        }, {
+            where: { CategoryId: req.body.categoryId }
         });
-        let categoryOrder = await Category.findOne({
-            where: { id: req.body.categoryId }
+        let subCategoryOrder = await SubCategory.findOne({
+            where: { id: req.body.subCategoryId }
         }, {
             attributes: ['order']
-        }, );
-        categoryOrder = categoryOrder.dataValues.order;
+        });
+        subCategoryOrder = subCategoryOrder.dataValues.order;
         orders = orders.map(v => v.dataValues.order);
         let order = null; // In case of checked to DISABLE, set null to order value
         if(req.body.checked === 'true' || req.body.checked === true) { // In case of checked to ENABLE
@@ -140,27 +153,30 @@ router.patch('/', async (req, res, next) => {
                 order = Math.max(...orders) + 1 
             };
         };
-        await Category.update({
+        await SubCategory.update({
             enabled: req.body.checked,
             order: order,
         }, {
-            where: { id: req.body.categoryId }
+            where: {
+                CategoryId: req.body.categoryId,
+                id: req.body.subCategoryId,
+            }
         });
         // In case of checked is false, rearrange orders
-        let newOrders = await Category.findAll({
+        let newOrders = await SubCategory.findAll({
             attributes: ['order']
         }, {
-            where: { enabled: true }
+            where: { CategoryId: req.body.categoryId, enabled: true }
         });
         newOrders = newOrders.map(v => v.dataValues.order);
         if((req.body.checked === 'false' || req.body.checked === false) && Math.max(...newOrders)) {
-            await Category.increment({
+            await SubCategory.increment({
                 order: -1
             }, {
-                where: { order: { [Op.gt]: categoryOrder } }
+                where: { order: { [Op.gt]: subCategoryOrder } }
             });
         };
-        res.status(200).json({ categoryId: req.body.categoryId, enabled: req.body.checked });
+        res.status(200).json({ categoryId: req.body.categoryId, subCategoryId: req.body.subCategoryId, enabled: req.body.checked });
     } catch (error) {
         console.error(error);
         next(error);

@@ -41,7 +41,6 @@ dotenv.config();
  */
 router.post('/', async (req, res, next) => {
     try {
-        console.log("THIS", req.body.email);
         const exUser = await User.findOne({ // 기존에 있는 아이디(이메일)인지 찾은 후,
             where: { email: req.body.email }
         });

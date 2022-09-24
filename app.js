@@ -14,6 +14,8 @@ const { swaggerUi, specs }  = require('./swagger');
 
 const postRouter = require('./routes/post');
 const userRouter = require('./routes/user');
+const categoryRouter = require('./routes/category');
+const subCategoryRouter = require('./routes/subCategory');
 
 passportConfig();
 dotenv.config();
@@ -71,6 +73,8 @@ app.get('/', (req, res) => {
 
 app.use('/post', postRouter);
 app.use('/user', userRouter);
+app.use('/category', categoryRouter);
+app.use('/subCategory', subCategoryRouter);
 
 app.listen(3065, () => {
     console.log('-- Doodling API is listening on http://localhost:3065 --');

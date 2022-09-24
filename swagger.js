@@ -78,6 +78,30 @@ const options = {
 					},
                 required: ['title', 'text', 'subCategory', 'userId' ]
 				},
+                categoryform: {
+					type: 'object',
+                    properties: {
+                        label: {
+                            type: 'string',
+                            example: 'MBTI'
+                        },
+					},
+                required: ['label']
+				},
+                subcategoryform: {
+					type: 'object',
+                    properties: {
+                        label: {
+                            type: 'string',
+                            example: 'MBTI'
+                        },
+                        categoryId: {
+                            type: 'integer',
+                            example: 1
+                        },
+					},
+                required: ['label', 'categoryId']
+				},
 			}
 		}
 	},
