@@ -84,6 +84,58 @@ router.post('/', async (req, res, next) => {
     };
 });
 
+// LOAD A POST // POST /:postId
+/**
+ * @openapi
+ * /:postId:
+ *   get:
+ *     tags:
+ *       - post
+ *     description: Get a Post
+ *     summary: Get a Post
+ *     responses:
+ *       200:
+ *              description: "GET A POST"
+ *              content:
+ *                application/json:
+ *                  schema:
+ *                    type: 'object'
+ *                    properties:
+ *                      categories:
+ *                          type: array
+ *                          example: ['MBTI', 'TOP100']
+ */
+router.get('/:postId', async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10) }
+        });
+        if(!post) {
+            return res.status(403).send('해당 게시글이 존재하지 않습니다ㅠㅠ');
+        };
+        const fullPost = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10)},
+            include: [{
+                model: SubCategory,
+                attributes: ['id', 'label']
+            }, {
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            }, {
+                model: Comment,
+                include: [{
+                    model: Comment,
+                    as: 'ReComment'
+                }]
+            }]
+        });
+        res.status(200).json(fullPost);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // ADD COMMENT // POST /1/comment
 /**
  * @openapi
