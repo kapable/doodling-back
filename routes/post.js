@@ -1,4 +1,5 @@
 const express = require('express');
+const { Op } = require("sequelize");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -66,6 +67,7 @@ router.post('/', async (req, res, next) => {
             text: req.body.text,
             SubCategoryId: req.body.subCategoryId,
             enabled: true,
+            views: 0,
         });
         const fullPost = await Post.findOne({
             where: { id: post.id },
@@ -196,7 +198,7 @@ router.post('/:postId/comment', async (req, res, next) => {
         };
         const comment = await Comment.create({
             text: req.body.text,
-            UserId: req.body.userId,
+            UserId: req.user.id,
             PostId: parseInt(req.params.postId, 10),
         });
         const fullComment = await Comment.findOne({
@@ -207,6 +209,99 @@ router.post('/:postId/comment', async (req, res, next) => {
             },]
         });
         res.status(201).json(fullComment);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// SET A POST ENABLE // PATCH /post/enable
+router.patch('/:postId/enable', async (req, res, next) => {
+    try {
+        const reqUser = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+            attributes: ['id' ,'admin'],
+        });
+        if(!reqUser.admin) {
+            return res.status(401).send('해당 기능에 접근 권한이 없습니다.');
+        };
+
+        const reqPost = await Post.findOne({
+            where: { id: req.params.postId },
+            attributes: ['id', 'title'],
+        });
+        if(!reqPost) {
+            return res.status(403).send('해당 포스트가 존재하지 않습니다.');
+        };
+        await Post.update({
+            enabled: req.body.checked,
+        }, {
+            where: { id: reqPost.id }
+        });
+        res.status(200).send(`${reqPost.title} 포스트는 볼 수 ${req.body.checked === true || req.body.checked === 'true'? '있' : '없'}습니다.`);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// LIKE A POST // PATCH /1/like
+router.patch('/:postId/like', async (req, res, next) => {
+    try {
+        const likePost = await Post.findOne({ where: { id: req.params.postId } });
+        if(!likePost) {
+            return res.status(403).send('해당 포스트가 존재하지 않습니다.');
+        }
+        await likePost.addPostLikers(parseInt(req.user.id, 10));
+        res.status(200).json({ PostId: likePost.id, UserId: parseInt(req.user.id, 10) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// REMOVE LIKE A POST // DELETE /1/like
+router.delete('/:postId/like', async (req, res, next) => {
+    try {
+        const likePost = await Post.findOne({ where: { id: req.params.postId } });
+        if(!likePost) {
+            return res.status(403).send('해당 포스트가 존재하지 않습니다.');
+        };
+        await likePost.removePostLikers(parseInt(req.user.id, 10));
+        res.status(200).json({ PostId: likePost.id, UserId: parseInt(req.user.id, 10) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// REPORT A POST // PATCH /1/report
+router.patch('/:postId/report', async (req, res, next) => {
+    try {
+        const reportedPost = await Post.findOne({ where: { id: req.params.postId } });
+        if(!reportedPost) {
+            return res.status(403).send('해당 포스트가 존재하지 않습니다.');
+        };
+        await reportedPost.addPostReporters(parseInt(req.body.id, 10));
+        res.status(200).json({ PostId: reportedPost.id, UserId: parseInt(req.body.id, 10) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// VIEW A POST // PATCH /1/view
+router.patch('/:postId/view', async (req, res, next) => {
+    try {
+        const viewedPost = await Post.findOne({ where: { id: req.params.postId } });
+        if(!viewedPost) {
+            return res.status(403).send('해당 포스트가 존재하지 않습니다.');
+        };
+        if(req?.body?.id) {
+            await viewedPost.addPostViewers(parseInt(req.body.id, 10));
+        };
+        await viewedPost.increment({ views: 1 });
+        res.sendStatus(200);
     } catch (error) {
         console.error(error);
         next(error);

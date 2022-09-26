@@ -7,7 +7,7 @@ module.exports = class Ads extends Model {
             campaign: {
                 type: DataTypes.STRING(20),
                 allowNull: false,
-                unique: true,
+                unique: 'campaign',
             },
             link: {
                 type: DataTypes.STRING(200),

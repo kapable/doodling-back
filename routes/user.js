@@ -288,4 +288,94 @@ router.patch('/description', async (req, res, next) => {
     };
 });
 
+// SET USER ENABLE // PATCH /user/enable
+router.patch('/:userId/enable', async (req, res, next) => {
+    try {
+        const reqUser = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+            attributes: ['id' ,'admin'],
+        });
+        if(!reqUser.admin) {
+            return res.status(401).send('해당 기능에 접근 권한이 없습니다.');
+        };
+
+        const resUser = await User.findOne({
+            where: { id: req.params.userId },
+            attributes: ['id', 'nickname']
+        },);
+        if(!resUser) {
+            return res.status(403).send('해당하는 유저가 존재하지 않습니다.');
+        }
+        await User.update({
+            enabled: req.body.checked
+        }, {
+            where: { id: resUser.id },
+        },);
+        res.status(200).json(`${resUser.nickname} 님이 활동할 수 ${req.body.checked === true || req.body.checked === 'true'? '있' : '없'}습니다.`);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// SET USER ADMIN // PATCH /user/admin
+router.patch('/admin', async (req, res, next) => {
+    try {
+        const reqUser = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+            attributes: ['id' ,'admin'],
+        });
+        if(!reqUser.admin) {
+            return res.status(401).send('해당 기능에 접근 권한이 없습니다.');
+        };
+
+        const resUser = await User.findOne({
+            where: { id: req.params.userId },
+            attributes: ['id', 'nickname']
+        },);
+        if(!resUser) {
+            return res.status(403).send('해당하는 유저가 존재하지 않습니다.');
+        }
+        await User.update({
+            admin: req.body.checked
+        }, {
+            where: { id: resUser.id },
+        },);
+        res.status(200).json(`${resUser.nickname} 님에게 어드민 권한이 ${req.body.checked === true || req.body.checked === 'true'? '부여' : '회수'}되었습니다.`);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// SET USER ADSADMIN // PATCH /user/adsAdmin
+router.patch('/adsAdmin', async (req, res, next) => {
+    try {
+        const reqUser = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+            attributes: ['id' ,'admin'],
+        });
+        if(!reqUser.admin) {
+            return res.status(401).send('해당 기능에 접근 권한이 없습니다.');
+        };
+
+        const resUser = await User.findOne({
+            where: { id: req.params.userId },
+            attributes: ['id', 'nickname']
+        },);
+        if(!resUser) {
+            return res.status(403).send('해당하는 유저가 존재하지 않습니다.');
+        }
+        await User.update({
+            adsAdmin: req.body.checked
+        }, {
+            where: { id: resUser.id },
+        },);
+        res.status(200).json(`${resUser.nickname} 님에게 광고 어드민 권한이 ${req.body.checked === true || req.body.checked === 'true'? '부여' : '회수'}되었습니다.`);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 module.exports = router;

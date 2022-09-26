@@ -21,6 +21,10 @@ module.exports = class Post extends Model {
                 type: DataTypes.BOOLEAN,
                 allowNull: false,
             },
+            views: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            }
         }, {
             modelName: 'Post',
             tableName: 'posts',
@@ -36,6 +40,7 @@ module.exports = class Post extends Model {
         db.Post.belongsTo(db.SubCategory);
         db.Post.belongsToMany(db.User, { through: "PostLike", as: "PostLikers" });
         db.Post.belongsToMany(db.User, { through: "PostLink", as: "PostLinkers" });
-        db.Post.belongsToMany(db.User, { through: "PostView", as: "PostViewers" });
+        db.Post.belongsToMany(db.User, { through: "PostView", as: "PostViewers", foreignKey: "post_id", sourceKey: "id" });
+        db.Post.belongsToMany(db.User, { through: "PostReport", as: "PostReporters" });
     };
 };

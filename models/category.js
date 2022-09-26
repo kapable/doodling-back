@@ -7,7 +7,7 @@ module.exports = class Category extends Model {
             label: {
                 type: DataTypes.STRING(20),
                 allowNull: false,
-                unique: true,
+                unique: 'label',
             },
             enabled: {
                 type: DataTypes.BOOLEAN,
@@ -16,7 +16,7 @@ module.exports = class Category extends Model {
             order: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
-                unique: true,
+                unique: 'order',
             }
         }, {
             modelName: 'Category',
