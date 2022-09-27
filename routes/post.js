@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
-const { Comment, Post, SubCategory, User  } = require('../models');
+const { Comment, Post, SubCategory, User, PostReport, PostView  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
@@ -252,8 +252,8 @@ router.patch('/:postId/like', async (req, res, next) => {
         if(!likePost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         }
-        await likePost.addPostLikers(parseInt(req.user.id, 10));
-        res.status(200).json({ PostId: likePost.id, UserId: parseInt(req.user.id, 10) });
+        await likePost.addPostLikers(parseInt(req.body.id, 10));
+        res.status(200).json({ PostId: likePost.id, UserId: parseInt(req.body.id, 10) });
     } catch (error) {
         console.error(error);
         next(error);
@@ -282,7 +282,11 @@ router.patch('/:postId/report', async (req, res, next) => {
         if(!reportedPost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
-        await reportedPost.addPostReporters(parseInt(req.body.id, 10));
+        await PostReport.create({
+            PostId: req.params.postId,
+            UserId: parseInt(req.body.id, 10),
+            label: req.body.reportLabel,
+        });
         res.status(200).json({ PostId: reportedPost.id, UserId: parseInt(req.body.id, 10) });
     } catch (error) {
         console.error(error);
@@ -298,7 +302,15 @@ router.patch('/:postId/view', async (req, res, next) => {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
         if(req?.body?.id) {
-            await viewedPost.addPostViewers(parseInt(req.body.id, 10));
+            await PostView.create({
+                PostId: req.params.postId,
+                UserId: req.body.id,
+            });
+        } else {
+            await PostView.create({
+                PostId: req.params.postId,
+                UserId: null,
+            });
         };
         await viewedPost.increment({ views: 1 });
         res.sendStatus(200);
