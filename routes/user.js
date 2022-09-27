@@ -207,6 +207,90 @@ router.get('/', async (req, res, next) => {
     };
 });
 
+// GET USER ALL INFO // GET /user/:userId
+router.get('/:userId', async (req, res, next) => {
+    try {
+        const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) } });
+        if(!user) {
+            return res.status(403).send('유저가 존재하지 않습니다 ㅠㅠ');
+        };
+        const fullUserWithoutPassword = await User.findOne({
+            where: { id: parseInt(req.params.userId, 10) },
+            attributes: {
+                exclude: ['password'],
+            },
+        });
+        res.status(200).json(fullUserWithoutPassword);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// FOLLOW A USER // PATCH /user/1/follow
+router.patch('/:userId/follow', async (req, res, next) => {
+    try {
+        const user = await User.findOne({ where: { id: req.params.userId }});
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저를 팔로우 할 수 없습니다!');
+        };
+        await user.addFollowers(req.body.id)
+        res.status(200).json({ id: req.params.userId });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// UNFOLLOW A USER // delete /user/1/unfollow
+router.delete('/:userId/unfollow', async (req, res, next) => {
+    try {
+        const user = await User.findOne({ where: { id: req.params.userId }});
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저를 언팔로우 할 수 없습니다!');
+        };
+        await user.removeFollowers(req.body.id)
+        res.status(200).json({ id: req.params.userId });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// GET FOLLWER LIST // GET /user/1/followers
+router.get('/:userId/followers', async (req, res, next) => {
+    try {
+        const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) }});
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저입니다!');
+        };
+        const followers = await user.getFollowers({
+            attributes: ['id', 'nickname', 'mbti']
+        });
+        res.status(200).json(followers);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// GET FOLLWING LIST // GET /user/1/followings
+router.get('/:userId/followings', async (req, res, next) => {
+    try {
+        const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) }});
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저입니다!');
+        };
+        const followings = await user.getFollowings({
+            attributes: ['id', 'nickname', 'mbti']
+        });
+        res.status(200).json(followings);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // CHANGE NICKNAME // PATCH /user/nickname
 /**
  * @openapi
@@ -247,6 +331,7 @@ router.patch('/nickname', async (req, res, next) => {
         next(error);
     };
 });
+
 // CHANGE DESCRIPTION // PATCH /user/description
 /**
  * @openapi
@@ -282,6 +367,23 @@ router.patch('/description', async (req, res, next) => {
             }
         });
         res.status(200).json({ description: req.body.description });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// CHANGE MBTI // PATCH /user/mbti
+router.patch('/mbti', async (req, res, next) => {
+    try {
+        User.update({
+            mbti: req.body.mbti,
+        }, {
+            where: {
+                id: req.user.id
+            }
+        });
+        res.status(200).json({ mbti: req.body.mbti });
     } catch (error) {
         console.error(error);
         next(error);

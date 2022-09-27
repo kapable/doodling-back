@@ -86,7 +86,7 @@ router.post('/', async (req, res, next) => {
     };
 });
 
-// LOAD A POST // POST /:postId
+// LOAD A POST // POST /post/:postId
 /**
  * @openapi
  * /:postId:
@@ -138,7 +138,7 @@ router.get('/:postId', async (req, res, next) => {
     };
 });
 
-// ADD COMMENT // POST /1/comment
+// ADD COMMENT // POST /post/1/comment
 /**
  * @openapi
  * /:postId/post:
@@ -198,7 +198,7 @@ router.post('/:postId/comment', async (req, res, next) => {
         };
         const comment = await Comment.create({
             text: req.body.text,
-            UserId: req.user.id,
+            UserId: req.body.id,
             PostId: parseInt(req.params.postId, 10),
         });
         const fullComment = await Comment.findOne({
@@ -215,7 +215,7 @@ router.post('/:postId/comment', async (req, res, next) => {
     };
 });
 
-// SET A POST ENABLE // PATCH /post/enable
+// SET A POST ENABLE // PATCH /post/1/enable
 router.patch('/:postId/enable', async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
@@ -245,7 +245,7 @@ router.patch('/:postId/enable', async (req, res, next) => {
     };
 });
 
-// LIKE A POST // PATCH /1/like
+// LIKE A POST // PATCH /post/1/like
 router.patch('/:postId/like', async (req, res, next) => {
     try {
         const likePost = await Post.findOne({ where: { id: req.params.postId } });
@@ -260,7 +260,7 @@ router.patch('/:postId/like', async (req, res, next) => {
     };
 });
 
-// REMOVE LIKE A POST // DELETE /1/like
+// REMOVE LIKE A POST // DELETE /post/1/like
 router.delete('/:postId/like', async (req, res, next) => {
     try {
         const likePost = await Post.findOne({ where: { id: req.params.postId } });
@@ -275,7 +275,7 @@ router.delete('/:postId/like', async (req, res, next) => {
     };
 });
 
-// REPORT A POST // PATCH /1/report
+// REPORT A POST // PATCH /post/1/report
 router.patch('/:postId/report', async (req, res, next) => {
     try {
         const reportedPost = await Post.findOne({ where: { id: req.params.postId } });
@@ -294,7 +294,7 @@ router.patch('/:postId/report', async (req, res, next) => {
     };
 });
 
-// VIEW A POST // PATCH /1/view
+// VIEW A POST // PATCH /post/1/view
 router.patch('/:postId/view', async (req, res, next) => {
     try {
         const viewedPost = await Post.findOne({ where: { id: req.params.postId } });

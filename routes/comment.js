@@ -3,7 +3,7 @@ const { Comment, Post, User  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
-// ADD RE-COMMENT // POST /1/reComment
+// ADD RE-COMMENT // POST /comment/1/reComment
 /**
  * @openapi
  * /:commentId/reComment:
@@ -81,6 +81,36 @@ router.post('/:commentId/reComment', async (req, res, next) => {
             },]
         });
         res.status(201).json(fullReComment);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// LIKE A COMMENT // PATCH /comment/1/like
+router.patch('/:commentId/like', async (req, res, next) => {
+    try {
+        const likeComment = await Comment.findOne({ where: { id: req.params.commentId } });
+        if(!likeComment) {
+            return res.status(403).send('해당 댓글이 존재하지 않습니다.');
+        }
+        await likeComment.addCommentLikers(parseInt(req.body.id, 10));
+        res.status(200).json({ CommentId: likeComment.id, UserId: parseInt(req.body.id, 10) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+// REMOVE LIKE A COMMENT // DELETE /comment/1/like
+router.delete('/:commentId/like', async (req, res, next) => {
+    try {
+        const likeComment = await Comment.findOne({ where: { id: req.params.commentId } });
+        if(!likeComment) {
+            return res.status(403).send('해당 댓글이 존재하지 않습니다.');
+        };
+        await likeComment.removeCommentLikers(parseInt(req.body.id, 10));
+        res.status(200).json({ CommentId: likeComment.id, UserId: parseInt(req.body.id, 10) });
     } catch (error) {
         console.error(error);
         next(error);
