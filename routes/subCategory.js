@@ -102,7 +102,7 @@ router.get('/', async (req, res, next) => {
     };
 });
 
-// SET SUBCATEGORY ENABLE // patch /subCategory
+// SET SUBCATEGORY ENABLE // patch /subCategory/1/enable
 /**
  * @openapi
  * /subCategory:
@@ -130,7 +130,7 @@ router.get('/', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/', async (req, res, next) => {
+router.patch('/:subCategoryId/enable', async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
         let orders = await SubCategory.findAll({
@@ -139,7 +139,7 @@ router.patch('/', async (req, res, next) => {
             where: { CategoryId: req.body.categoryId }
         });
         let subCategoryOrder = await SubCategory.findOne({
-            where: { id: req.body.subCategoryId }
+            where: { id: req.params.subCategoryId }
         }, {
             attributes: ['order']
         });
@@ -159,7 +159,7 @@ router.patch('/', async (req, res, next) => {
         }, {
             where: {
                 CategoryId: req.body.categoryId,
-                id: req.body.subCategoryId,
+                id: req.params.subCategoryId,
             }
         });
         // In case of checked is false, rearrange orders
@@ -176,7 +176,7 @@ router.patch('/', async (req, res, next) => {
                 where: { order: { [Op.gt]: subCategoryOrder } }
             });
         };
-        res.status(200).json({ categoryId: req.body.categoryId, subCategoryId: req.body.subCategoryId, enabled: req.body.checked });
+        res.status(200).json({ categoryId: req.body.categoryId, subCategoryId: req.params.subCategoryId, enabled: req.body.checked });
     } catch (error) {
         console.error(error);
         next(error);

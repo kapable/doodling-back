@@ -94,7 +94,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-// SET CATEGORY ENABLE // patch /Category
+// SET CATEGORY ENABLE // patch /category/1/enable
 /**
  * @openapi
  * /category:
@@ -119,14 +119,14 @@ router.get('/', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/', async (req, res, next) => {
+router.patch('/:categoryId/enable', async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
         let orders = await Category.findAll({
             attributes: ['order']
         });
         let categoryOrder = await Category.findOne({
-            where: { id: req.body.categoryId }
+            where: { id: req.params.categoryId }
         }, {
             attributes: ['order']
         }, );
@@ -144,7 +144,7 @@ router.patch('/', async (req, res, next) => {
             enabled: req.body.checked,
             order: order,
         }, {
-            where: { id: req.body.categoryId }
+            where: { id: req.params.categoryId }
         });
         // In case of checked is false, rearrange orders
         let newOrders = await Category.findAll({
@@ -160,7 +160,7 @@ router.patch('/', async (req, res, next) => {
                 where: { order: { [Op.gt]: categoryOrder } }
             });
         };
-        res.status(200).json({ categoryId: req.body.categoryId, enabled: req.body.checked });
+        res.status(200).json({ categoryId: req.params.categoryId, enabled: req.body.checked });
     } catch (error) {
         console.error(error);
         next(error);
