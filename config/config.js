@@ -8,6 +8,7 @@ module.exports = {
         "password": process.env.DB_PASSWORD,
         "database": "doodling_development",
         "host": "127.0.0.1",
+        "timezone": process.env.RDS_TIMEZONE,
         "dialect": "mysql",
     },
     "test": {
@@ -15,6 +16,7 @@ module.exports = {
         "password": process.env.DB_PASSWORD,
         "database": "doodling_test",
         "host": "127.0.0.1",
+        "timezone": process.env.RDS_TIMEZONE,
         "dialect": "mysql"
     },
     "production": {
@@ -22,6 +24,7 @@ module.exports = {
         "password": process.env.RDS_PASSWORD,
         "database": process.env.RDS_DATABASE,
         "host": process.env.RDS_HOST,
+        "timezone": process.env.RDS_TIMEZONE,
         "dialect": "mysql",
         "port":process.env.RDS_PORT
     }

@@ -267,8 +267,8 @@ router.delete('/:postId/like', async (req, res, next) => {
         if(!likePost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
-        await likePost.removePostLikers(parseInt(req.user.id, 10));
-        res.status(200).json({ PostId: likePost.id, UserId: parseInt(req.user.id, 10) });
+        await likePost.removePostLikers(parseInt(req.body.id, 10));
+        res.status(200).json({ PostId: likePost.id, UserId: parseInt(req.body.id, 10) });
     } catch (error) {
         console.error(error);
         next(error);

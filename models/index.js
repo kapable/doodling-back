@@ -7,6 +7,8 @@ const post = require('./post');
 const user = require('./user');
 const postView = require('./postView');
 const postReport = require('./postReport');
+const postLike = require('./postLike');
+const topPosts = require('./topPost');
 
 const Sequelize = require('sequelize');
 const env = process.env.NODE_ENV || 'development';
@@ -24,6 +26,8 @@ db.Post = post;
 db.User = user;
 db.PostView = postView;
 db.PostReport = postReport;
+db.PostLike = postLike;
+db.TopPost = topPosts;
 
 Object.keys(db).forEach(modelName => {
   db[modelName].init(sequelize);

@@ -38,6 +38,7 @@ module.exports = class Post extends Model {
         db.Post.hasMany(db.Comment);
         db.Post.hasMany(db.Image);
         db.Post.belongsTo(db.SubCategory);
+        db.Post.hasMany(db.TopPost);
         db.Post.belongsToMany(db.User, { through: "PostLike", as: "PostLikers" });
         db.Post.belongsToMany(db.User, { through: "PostLink", as: "PostLinkers" });
         db.Post.belongsToMany(db.User, { through: "PostView", as: "PostViewers" });
