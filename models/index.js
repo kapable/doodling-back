@@ -8,6 +8,7 @@ const user = require('./user');
 const postView = require('./postView');
 const postReport = require('./postReport');
 const postLike = require('./postLike');
+const postLink = require('./postLink');
 const topPosts = require('./topPost');
 
 const Sequelize = require('sequelize');
@@ -27,6 +28,7 @@ db.User = user;
 db.PostView = postView;
 db.PostReport = postReport;
 db.PostLike = postLike;
+db.PostLink = postLink;
 db.TopPost = topPosts;
 
 Object.keys(db).forEach(modelName => {

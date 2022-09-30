@@ -67,9 +67,9 @@ module.exports = class User extends Model {
         db.User.hasMany(db.Post);
         db.User.hasMany(db.Comment);
         db.User.belongsToMany(db.Post, { through: "PostLike", as: "PostLiked" });
-        db.User.belongsToMany(db.Post, { through: "PostLink", as: "PostLinked" });
-        db.User.belongsToMany(db.Post, { through: "PostView", as: "PostViewed" });
-        db.User.belongsToMany(db.Post, { through: "PostReport", as: "PostReported" });
+        db.User.hasMany(db.PostView);
+        db.User.hasMany(db.PostReport);
+        db.User.hasMany(db.PostLink);
         db.User.belongsToMany(db.Comment, { through: "CommentLike", as: "CommentLiked" });
         db.User.belongsToMany(db.User, { through: "Follow", as: "Followers", foreignKey: "FollowingId" });
         db.User.belongsToMany(db.User, { through: "Follow", as: "Followings", foreignKey: "FollowerId" });

@@ -79,7 +79,7 @@ app.use('/user', userRouter);
 app.use('/category', categoryRouter);
 app.use('/subCategory', subCategoryRouter);
 
-// scheduler.addSimpleIntervalJob(realTimeJob);
+scheduler.addSimpleIntervalJob(realTimeJob);
 
 app.listen(3065, () => {
     console.log('-- Doodling API is listening on http://localhost:3065 --');
