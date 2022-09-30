@@ -13,6 +13,7 @@ const passport = require('passport');
 const { swaggerUi, specs }  = require('./swagger');
 const { scheduler, realTimeJob, weeklyJob, monthlyJob } = require('./scheduler');
 
+const postsRouter = require('./routes/posts');
 const postRouter = require('./routes/post');
 const commentRouter = require('./routes/comment');
 const userRouter = require('./routes/user');
@@ -74,6 +75,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/post', postRouter);
+app.use('/posts', postsRouter);
 app.use('/comment', commentRouter);
 app.use('/user', userRouter);
 app.use('/category', categoryRouter);
