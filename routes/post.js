@@ -9,6 +9,53 @@ const { Comment, Post, SubCategory, User, PostReport, PostView  } = require('../
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
+try {
+    fs.accessSync('uploads');
+} catch (error) {
+    console.log('uploads 폴더가 존재하지 않아 생성합니다');
+    fs.mkdirSync('uploads');
+};
+AWS.config.update({
+    accessKeyId: process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+    region: 'ap-northeast-2',
+});
+const upload = multer({
+    storage:
+    process.env.NODE_ENV === 'production'
+        ? multerS3({
+        s3: new AWS.S3(),
+        bucket: 'doodling-images',
+        key(req, file, cb) {
+            cb(null, `original/${Date.now()}_${path.basename(file.originalname)}`)
+        },
+        contentType(req, file, cb) {
+            const extension = path.extname(file.originalname).replace('.','');
+            cb(null, `image/${extension}`);
+        },
+    }) : multer.diskStorage({
+        destination(req, file, done) {
+            done(null, 'uploads');
+        },
+        filename(req, file, done) {
+            const ext = path.extname(file.originalname);
+            const basename = path.basename(file.originalname, ext);
+            done(null, basename + '_' + new Date().getTime() + ext);
+        },
+    }),
+    limits: { fileSize: 20 * 1024 * 1024 },
+});
+
+// ADD IMAGES
+router.post(`/images`, upload.array('image'), async (req, res, next) => { // POST /post/images
+    try {
+        res.status(200).json(req.files.map((v) => process.env.NODE_ENV === 'production' ? `https://images.doodling.kr/${v.key}`.replace(/\/original\//, '/resized/') : `${process.env.DEV_BACKURL}/${v.filename}`));
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
 // UPLOAD POST // POST /post
 /**
  * @openapi

@@ -2,7 +2,7 @@ const { ToadScheduler, SimpleIntervalJob, AsyncTask, Task } = require('toad-sche
 const { Post, PostView, TopPost, Comment, PostLike, Category, SubCategory } = require('./models');
 const { Op } = require('sequelize');
 
-const MINUTES = 5
+const MINUTES = 50000;
 
 const scheduler = new ToadScheduler();
 // Total
@@ -52,9 +52,13 @@ const realTimeTask = new Task(
 
         await TopPost.destroy({
             where: {
-                [Op.or]: [
-                    { realTimeRank: { [Op.not]: null } },
-                    { PostId: { [Op.is]: null } }
+                [Op.and]: [
+                    {[Op.or]: [
+                            { realTimeRank: { [Op.not]: null } },
+                            { PostId: { [Op.is]: null } }
+                    ],},
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } }
                 ]
             }
         });
@@ -68,7 +72,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ minutes: MINUTES, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ seconds: 1, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
@@ -116,9 +120,13 @@ const weeklyTask = new Task(
 
         await TopPost.destroy({
             where: {
-                [Op.or]: [
-                    { weeklyRank: { [Op.not]: null } },
-                    { PostId: { [Op.is]: null } }
+                [Op.and]: [
+                    {[Op.or]: [
+                            { weeklyRank: { [Op.not]: null } },
+                            { PostId: { [Op.is]: null } }
+                    ],},
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } }
                 ]
             }
         });
@@ -134,7 +142,7 @@ const weeklyTask = new Task(
 
 const weeklyJob = new SimpleIntervalJob({ days: 1, }, weeklyTask);
 
-// 주간 Top POSTS
+// 월간 Top POSTS
 const monthlyTask = new Task(
     'SELECT MONTHLY TOP POSTS',
     async () => {
@@ -180,9 +188,13 @@ const monthlyTask = new Task(
 
         await TopPost.destroy({
             where: {
-                [Op.or]: [
-                    { monthlyRank: { [Op.not]: null } },
-                    { PostId: { [Op.is]: null } }
+                [Op.and]: [
+                    {[Op.or]: [
+                            { monthlyRank: { [Op.not]: null } },
+                            { PostId: { [Op.is]: null } }
+                    ],},
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } }
                 ]
             }
         });
@@ -254,7 +266,8 @@ const categoryRealTimeTask = new Task(
 
             await TopPost.destroy({
                 where: {
-                    CategoryId: cat // for loop
+                    CategoryId: cat,// for loop
+                    realTimeRank: { [Op.not]: null },
                 }
             });
             totalScoresArray.forEach(async (v, i) => await TopPost.upsert({
@@ -269,7 +282,7 @@ const categoryRealTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const categoryRealTimJob = new SimpleIntervalJob({ seconds: 1, }, categoryRealTimeTask);
+const categoryRealTimJob = new SimpleIntervalJob({ minutes: MINUTES, }, categoryRealTimeTask);
 
 // SubCategory Top
 // RealTime for a SubCategory
@@ -327,7 +340,8 @@ const subCategoryRealTimeTask = new Task(
 
             await TopPost.destroy({
                 where: {
-                    SubCategoryId: cat // for loop
+                    SubCategoryId: cat, // for loop
+                    realTimeRank: { [Op.not]: null },
                 }
             });
             totalScoresArray.forEach(async (v, i) => await TopPost.upsert({
@@ -342,7 +356,7 @@ const subCategoryRealTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const subCategoryRealTimJob = new SimpleIntervalJob({ seconds: 1, }, subCategoryRealTimeTask);
+const subCategoryRealTimJob = new SimpleIntervalJob({ minutes: MINUTES, }, subCategoryRealTimeTask);
 
 
 module.exports = {
