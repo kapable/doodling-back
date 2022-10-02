@@ -27,7 +27,9 @@ const upload = multer({
         s3: new AWS.S3(),
         bucket: 'doodling-images',
         key(req, file, cb) {
-            cb(null, `original/${Date.now()}_${path.basename(file.originalname)}`)
+            cb(null, `original/${Date.now()}_${
+                Buffer.from(path.basename(file.originalname), 'latin1').toString('utf8')
+            }`)
         },
         contentType(req, file, cb) {
             const extension = path.extname(file.originalname).replace('.','');
@@ -39,7 +41,7 @@ const upload = multer({
         },
         filename(req, file, done) {
             const ext = path.extname(file.originalname);
-            const basename = path.basename(file.originalname, ext);
+            const basename = Buffer.from(path.basename(file.originalname, ext), 'latin1').toString('utf8');
             done(null, basename + '_' + new Date().getTime() + ext);
         },
     }),
