@@ -11,7 +11,7 @@ const path = require('path');
 const passportConfig = require('./passport');
 const passport = require('passport');
 const { swaggerUi, specs }  = require('./swagger');
-const { scheduler, realTimeJob, weeklyJob, monthlyJob } = require('./scheduler');
+const { scheduler, realTimeJob, weeklyJob, monthlyJob, categoryRealTimJob, subCategoryRealTimJob } = require('./scheduler');
 
 const postsRouter = require('./routes/posts');
 const postRouter = require('./routes/post');
@@ -84,6 +84,8 @@ app.use('/subCategory', subCategoryRouter);
 // scheduler.addSimpleIntervalJob(realTimeJob);
 // scheduler.addSimpleIntervalJob(weeklyJob);
 // scheduler.addSimpleIntervalJob(monthlyJob);
+// scheduler.addSimpleIntervalJob(categoryRealTimJob);
+// scheduler.addSimpleIntervalJob(subCategoryRealTimJob);
 
 app.listen(3065, () => {
     console.log('-- Doodling API is listening on http://localhost:3065 --');

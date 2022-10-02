@@ -1,24 +1,27 @@
 const { ToadScheduler, SimpleIntervalJob, AsyncTask, Task } = require('toad-scheduler');
-const { Post, PostView, TopPost, Comment, PostLike } = require('./models');
+const { Post, PostView, TopPost, Comment, PostLike, Category, SubCategory } = require('./models');
 const { Op } = require('sequelize');
 
-const scheduler = new ToadScheduler();
+const MINUTES = 5
 
+const scheduler = new ToadScheduler();
+// Total
 // 실시간 Top POSTS
 const realTimeTask = new Task(
     'SELECT REALTIME TOP POSTS',
     async () => {
         // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
         const totalScores = {};
-        const aDayAgo = new Date(new Date().setDate(new Date().getDate() - 10));
+        const minutesAgo = new Date(new Date - MINUTES * 60000);
         const viewScore = await PostView.findAll({
             where: { 
                 createdAt: {
-                    [Op.gte]: aDayAgo,
+                    [Op.gte]: minutesAgo,
                     [Op.lte]: new Date()
                 }
             },
             attributes: ['PostId'],
+            limit: 100,
             raw: true,
         });
         viewScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
@@ -65,7 +68,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ minutes: 5, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ minutes: MINUTES, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
@@ -82,6 +85,7 @@ const weeklyTask = new Task(
                 }
             },
             attributes: ['PostId'],
+            limit: 100,
             raw: true,
         });
         viewScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
@@ -145,6 +149,7 @@ const monthlyTask = new Task(
                 }
             },
             attributes: ['PostId'],
+            limit: 100,
             raw: true,
         });
         viewScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
@@ -193,9 +198,158 @@ const monthlyTask = new Task(
 
 const monthlyJob = new SimpleIntervalJob({ days: 7, }, monthlyTask);
 
+// Category Top
+// RealTime for a Category
+const categoryRealTimeTask = new Task(
+    'SELECT CATEGORY REALTIME TOP POSTS',
+    async () => {
+        // get All Categories
+        let categories = await Category.findAll({
+            attributes: ['id'],
+            raw: true
+        });
+        categories = categories.map(v => v.id);
+
+        categories.map(async (cat) => {
+            // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
+            const totalScores = {};
+            const minutesAgo = new Date(new Date - MINUTES * 60000);
+            const viewScore = await PostView.findAll({
+                where: {
+                    CategoryId: cat, // for loop
+                    createdAt: {
+                        [Op.gte]: minutesAgo,
+                        [Op.lte]: new Date()
+                    }
+                },
+                attributes: ['PostId'],
+                limit: 5,
+                raw: true,
+            });
+            viewScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
+
+            const commentScore = await Comment.findAll({
+                where: {
+                    PostId: {
+                        [Op.in]:Object.keys(totalScores)
+                    }
+                },
+                attributes: ['PostId'],
+                raw: true
+            });
+            commentScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
+
+            const likeScore = await PostLike.findAll({
+                where: {
+                    PostId: {
+                        [Op.in]:Object.keys(totalScores)
+                    }
+                },
+                attributes: ['PostId'],
+                raw: true
+            });
+            likeScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
+
+            const totalScoresArray = Object.entries(totalScores).sort((a, b) => b[1] - a[1]);
+
+            await TopPost.destroy({
+                where: {
+                    CategoryId: cat // for loop
+                }
+            });
+            totalScoresArray.forEach(async (v, i) => await TopPost.upsert({
+                PostId: parseInt(v[0], 10),
+                realTimeRank: i+1,
+                CategoryId: cat // for loop
+            }));
+            return console.log('CATEGORY REAL TIME JOB SUCCESS');
+        })
+        
+    },
+    (error) => { return console.error(error) }
+);
+
+const categoryRealTimJob = new SimpleIntervalJob({ seconds: 1, }, categoryRealTimeTask);
+
+// SubCategory Top
+// RealTime for a SubCategory
+const subCategoryRealTimeTask = new Task(
+    'SELECT SUBCATEGORY REALTIME TOP POSTS',
+    async () => {
+        // get All SubCategories
+        let subCategories = await SubCategory.findAll({
+            attributes: ['id'],
+            raw: true
+        });
+        subCategories = subCategories.map(v => v.id);
+
+        subCategories.map(async (cat) => {
+            // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
+            const totalScores = {};
+            const minutesAgo = new Date(new Date - MINUTES * 60000);
+            const viewScore = await PostView.findAll({
+                where: {
+                    SubCategoryId: cat, // for loop
+                    createdAt: {
+                        [Op.gte]: minutesAgo,
+                        [Op.lte]: new Date()
+                    }
+                },
+                attributes: ['PostId'],
+                limit: 5,
+                raw: true,
+            });
+            viewScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
+
+            const commentScore = await Comment.findAll({
+                where: {
+                    PostId: {
+                        [Op.in]:Object.keys(totalScores)
+                    }
+                },
+                attributes: ['PostId'],
+                raw: true
+            });
+            commentScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
+
+            const likeScore = await PostLike.findAll({
+                where: {
+                    PostId: {
+                        [Op.in]:Object.keys(totalScores)
+                    }
+                },
+                attributes: ['PostId'],
+                raw: true
+            });
+            likeScore.map(v => v.PostId).forEach((x) => totalScores[x] = (totalScores[x] || 0) + 1);
+
+            const totalScoresArray = Object.entries(totalScores).sort((a, b) => b[1] - a[1]);
+
+            await TopPost.destroy({
+                where: {
+                    SubCategoryId: cat // for loop
+                }
+            });
+            totalScoresArray.forEach(async (v, i) => await TopPost.upsert({
+                PostId: parseInt(v[0], 10),
+                realTimeRank: i+1,
+                SubCategoryId: cat // for loop
+            }));
+            return console.log('SUBCATEGORY REAL TIME JOB SUCCESS');
+        })
+        
+    },
+    (error) => { return console.error(error) }
+);
+
+const subCategoryRealTimJob = new SimpleIntervalJob({ seconds: 1, }, subCategoryRealTimeTask);
+
+
 module.exports = {
     scheduler,
     realTimeJob,
     weeklyJob,
-    monthlyJob
+    monthlyJob,
+    categoryRealTimJob,
+    subCategoryRealTimJob
 };

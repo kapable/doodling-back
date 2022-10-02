@@ -4,6 +4,11 @@ const { Model } = DataTypes;
 module.exports = class TopPost extends Model {
     static init(sequelize) {
         return super.init({
+            id: {
+                type: DataTypes.UUID,
+                defaultValue: DataTypes.UUIDV4,
+                primaryKey: true
+            },
             realTimeRank: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
@@ -26,5 +31,7 @@ module.exports = class TopPost extends Model {
     };
     static associate(db) {
         db.TopPost.belongsTo(db.Post);
+        db.TopPost.belongsTo(db.Category);
+        db.TopPost.belongsTo(db.SubCategory);
     };
 };

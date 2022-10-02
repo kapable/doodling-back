@@ -13,13 +13,65 @@ const router = express.Router();
 router.get('/top100RealTime', async (req, res, next) => {
     try {
         const realTimeTopPosts = await TopPost.findAll({
-            where: { realTimeRank: { [Op.not]: null } },
+            where: {
+                [Op.and]: [
+                    { realTimeRank: { [Op.not]: null } },
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } },
+                ]
+            },
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
             }]
         });
         res.status(200).json(realTimeTopPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// GET WEEKLY TOP 100 // GET /posts/top100Weekly
+router.get('/top100Weekly', async (req, res, next) => {
+    try {
+        const weeklyTopPosts = await TopPost.findAll({
+            where: {
+                [Op.and]: [
+                    { weeklyRank: { [Op.not]: null } },
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } },
+                ]
+            },
+            attributes: ['PostId', 'weeklyRank'],
+            include: [{
+                model: Post,
+            }]
+        });
+        res.status(200).json(weeklyTopPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// GET MONTHLY TOP 100 // GET /posts/top100Monthly
+router.get('/top100Monthly', async (req, res, next) => {
+    try {
+        const monthlyTopPosts = await TopPost.findAll({
+            where: {
+                [Op.and]: [
+                    { monthlyRank: { [Op.not]: null } },
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } },
+                ]
+            },
+            attributes: ['PostId', 'monthlyRank'],
+            include: [{
+                model: Post,
+            }]
+        });
+        res.status(200).json(monthlyTopPosts);
     } catch (error) {
         console.error(error);
         next(error);

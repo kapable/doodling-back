@@ -14,6 +14,8 @@ module.exports = class PostView extends Model {
     };
     static associate(db) {
         db.PostView.belongsTo(db.Post);
+        db.PostView.belongsTo(db.Category);
+        db.PostView.belongsTo(db.SubCategory);
         db.PostView.belongsTo(db.User);
     };
 };

@@ -301,17 +301,14 @@ router.patch('/:postId/view', async (req, res, next) => {
         if(!viewedPost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
-        if(req?.body?.id) {
-            await PostView.create({
-                PostId: req.params.postId,
-                UserId: req.body.id,
-            });
-        } else {
-            await PostView.create({
-                PostId: req.params.postId,
-                UserId: null,
-            });
-        };
+        const viewedSubCategory = await viewedPost.getSubCategory();
+        const viewedCategory = await viewedSubCategory.getCategory();
+        await PostView.create({
+            PostId: req.params.postId,
+            UserId: req?.body?.id ? req.body.id :  null ,
+            SubCategoryId: parseInt(viewedSubCategory.dataValues.id, 10),
+            CategoryId: parseInt(viewedCategory.dataValues.id, 10),
+        });
         await viewedPost.increment({ views: 1 });
         res.sendStatus(200);
     } catch (error) {

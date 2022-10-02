@@ -29,5 +29,7 @@ module.exports = class Category extends Model {
     static associate(db) {
         db.Category.hasOne(db.Image);
         db.Category.hasMany(db.SubCategory);
+        db.Category.hasMany(db.TopPost);
+        db.Category.hasMany(db.PostView);
     };
 };

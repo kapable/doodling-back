@@ -29,5 +29,7 @@ module.exports = class SubCategory extends Model {
     static associate(db) {
         db.SubCategory.belongsTo(db.Category);
         db.SubCategory.hasMany(db.Post);
+        db.SubCategory.hasMany(db.PostView);
+        db.SubCategory.hasMany(db.TopPost);
     };
 };
