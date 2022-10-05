@@ -1,5 +1,5 @@
 const express = require('express');
-const { Category } = require('../models');
+const { Category, SubCategory } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 const { Op } = require("sequelize");
@@ -86,6 +86,35 @@ router.get('/', async (req, res, next) => {
             order: [
                 ['id', 'ASC']
             ],
+        });
+        res.status(200).send(categories);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
+// LOAD CATEGORIES AND SUBCATEGORIES // GET /category/withSubs
+router.get('/withSubs', async (req, res, next) => {
+    try {
+        const categories = await Category.findAll({
+            order: [
+                ['order', 'ASC']
+            ],
+            where: { enabled: true },
+            include: [{
+                model: SubCategory,
+                order: [
+                    ['order', 'ASC']
+                ],
+                // where: { enabled: true },
+                attributes: {
+                    exclude: ['createdAt', 'updatedAt'],
+                },
+            }],
+            attributes: {
+                exclude: ['createdAt', 'updatedAt'],
+            },
         });
         res.status(200).send(categories);
     } catch (error) {

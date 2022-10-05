@@ -7,6 +7,10 @@ module.exports = class SubCategory extends Model {
             label: {
                 type: DataTypes.STRING(20),
                 allowNull: false,
+            },
+            domain: {
+                type: DataTypes.STRING(20),
+                allowNull: true,
                 unique: 'label',
             },
             enabled: {
