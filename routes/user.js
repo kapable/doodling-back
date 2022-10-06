@@ -39,7 +39,7 @@ dotenv.config();
  *                          type: string
  *                          example: "회원가입에 성공했습니다."
  */
-router.post('/', async (req, res, next) => {
+router.post('/', isNotLoggedIn, async (req, res, next) => {
     try {
         const exUser = await User.findOne({ // 기존에 있는 아이디(이메일)인지 찾은 후,
             where: { email: req.body.email }
@@ -110,7 +110,7 @@ router.post('/', async (req, res, next) => {
  *                          type: string
  *                          example: ISTJ
  */
-router.post('/login', (req, res, next) => {
+router.post('/login', isNotLoggedIn, (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
         if (err) {
             console.error(err);
@@ -127,7 +127,7 @@ router.post('/login', (req, res, next) => {
             const fullUserWithoutPassword = await User.findOne({
                 where: { id: user.id },
                 attributes: {
-                    exclude: ['password'],
+                    exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
                 },
                 include: []
             });
@@ -152,7 +152,7 @@ router.post('/login', (req, res, next) => {
  *          200:
  *              description: "로그아웃 되었습니다!"
  */
-router.post(`/logout`, (req, res) => { 
+router.post(`/logout`, isLoggedIn, (req, res) => { 
     req.logout();
     req.session.destroy();
     res.send('로그아웃 되었습니다!');
@@ -217,8 +217,16 @@ router.get('/:userId', async (req, res, next) => {
         const fullUserWithoutPassword = await User.findOne({
             where: { id: parseInt(req.params.userId, 10) },
             attributes: {
-                exclude: ['password'],
+                exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
             },
+            include: [{
+                model: Post
+            }, {
+                model: Comment
+            }, {
+                model: Post,
+                as: 'PostLiked'
+            }]
         });
         res.status(200).json(fullUserWithoutPassword);
     } catch (error) {
