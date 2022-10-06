@@ -45,6 +45,7 @@ router.post('/', async (req, res, next) => {
         };
         await Category.create({
             label: req.body.label,
+            domain: req.body.domain,
             enabled: false,
         });
         const categories = await Category.findAll({

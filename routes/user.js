@@ -265,7 +265,7 @@ router.get('/:userId/followers', async (req, res, next) => {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
         const followers = await user.getFollowers({
-            attributes: ['id', 'nickname', 'mbti']
+            attributes: ['id', 'nickname', 'mbti'],
         });
         res.status(200).json(followers);
     } catch (error) {

@@ -48,6 +48,7 @@ router.post('/', async (req, res, next) => {
         };
         await SubCategory.create({
             label: req.body.label,
+            domain: req.body.domain,
             CategoryId: req.body.categoryId,
             enabled: false,
         });
