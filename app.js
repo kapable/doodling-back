@@ -32,14 +32,13 @@ db.sequelize.sync({ alter: true })
 app.use('/', express.static(path.join(__dirname, 'uploads')));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {explorer: true}));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
 if (process.env.NODE_ENV === 'production') {
-    app.set('trust proxy', true);
-    // app.enable('trust proxy');
+    app.enable('trust proxy');
     app.use(morgan('combined'));
-    app.use(helmet());
+    app.use(helmet({ contentSecurityPolicy: false }));
     app.use(hpp());
 
     app.use(session({
@@ -50,7 +49,7 @@ if (process.env.NODE_ENV === 'production') {
         cookie: {
             httpOnly: true,
             secure: true,
-            domain: 'doodling.kr'
+            domain: '.doodling.kr'
         }
     }));
 } else {
