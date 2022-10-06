@@ -36,7 +36,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
 if (process.env.NODE_ENV === 'production') {
-    app.enable('trust proxy');
+    app.set('trust proxy', true);
+    // app.enable('trust proxy');
     app.use(morgan('combined'));
     app.use(helmet());
     app.use(hpp());
@@ -49,7 +50,7 @@ if (process.env.NODE_ENV === 'production') {
         cookie: {
             httpOnly: true,
             secure: true,
-            domain: '.doodling.kr'
+            domain: 'doodling.kr'
         }
     }));
 } else {
