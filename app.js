@@ -36,6 +36,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 
 if (process.env.NODE_ENV === 'production') {
+    app.use(cors({
+        origin: [process.env.SERVICE_FRONT_URL, process.env.SERVICE_FRONT_URL2, process.env.API_DOCS_URL],
+        credentials: true,
+    }));
+
     app.enable('trust proxy');
     app.use(morgan('combined'));
     app.use(helmet({ contentSecurityPolicy: false }));
@@ -53,6 +58,10 @@ if (process.env.NODE_ENV === 'production') {
         }
     }));
 } else {
+    app.use(cors({
+        origin: [process.env.DEV_FRONT_URL],
+        credentials: true,
+    }));
     app.use(morgan('dev'));
 
     app.use(session({
@@ -62,10 +71,7 @@ if (process.env.NODE_ENV === 'production') {
     }));
 }
 
-app.use(cors({
-    origin: [process.env.SERVICE_FRONT_URL, process.env.SERVICE_FRONT_URL2, process.env.DEV_FRONT_URL, process.env.API_DOCS_URL],
-    credentials: true,
-}));
+
 
 app.use(passport.initialize());
 app.use(passport.session());
