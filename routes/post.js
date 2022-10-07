@@ -28,7 +28,7 @@ const upload = multer({
         bucket: 'doodling-images',
         key(req, file, cb) {
             cb(null, `original/${Date.now()}_${
-                Buffer.from(path.basename(file.originalname), 'latin1').toString('utf8')
+                Buffer.from(path.basename(file.originalname), 'latin1').toString('utf8').replace(/[`\s~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '')
             }`)
         },
         contentType(req, file, cb) {
@@ -41,7 +41,7 @@ const upload = multer({
         },
         filename(req, file, done) {
             const ext = path.extname(file.originalname);
-            const basename = Buffer.from(path.basename(file.originalname, ext), 'latin1').toString('utf8');
+            const basename = Buffer.from(path.basename(file.originalname, ext), 'latin1').toString('utf8').replace(/[`\s~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '');
             done(null, basename + '_' + new Date().getTime() + ext);
         },
     }),
