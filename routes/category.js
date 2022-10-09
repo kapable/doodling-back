@@ -36,6 +36,7 @@ const { Op } = require("sequelize");
  *                          example: "카테고리 생성에 성공했습니다."
  */
 router.post('/', async (req, res, next) => {
+    console.log(req);
     try {
         const exCategory = await Category.findOne({
             where: { label: req.body.label }
@@ -43,10 +44,17 @@ router.post('/', async (req, res, next) => {
         if(exCategory) {
             return res.status(403).send("이미 존재하는 카테고리입니다.");
         };
+        const categoryOrders = await Category.findAll({
+            attributes: ['order'],
+            raw: true,
+        });
+        let orders = categoryOrders.map(v => v.order);
+        const order = Math.max(...orders) + 1 || 1;
         await Category.create({
             label: req.body.label,
             domain: req.body.domain,
             enabled: false,
+            order: order
         });
         const categories = await Category.findAll({
             order: [
