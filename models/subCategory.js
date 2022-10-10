@@ -11,7 +11,6 @@ module.exports = class SubCategory extends Model {
             domain: {
                 type: DataTypes.STRING(20),
                 allowNull: true,
-                unique: 'label',
             },
             enabled: {
                 type: DataTypes.BOOLEAN,

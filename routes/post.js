@@ -114,18 +114,16 @@ router.post('/', async (req, res, next) => {
             UserId: parseInt(req.body.userId, 10),
             title: req.body.title,
             text: req.body.text,
-            SubCategoryId: req.body.subCategoryId,
+            SubCategoryId: parseInt(req.body.subCategoryId, 10),
             enabled: true,
             views: 0,
         });
         const fullPost = await Post.findOne({
             where: { id: post.id },
+            attributes: ['id'],
             include: [{
                 model: SubCategory,
-                attributes: ['id', 'label'],
-            }, {
-                model: User,
-                attributes: ['id', 'nickname', 'mbti']
+                attributes: ['domain'],
             }]
         });
         res.status(201).json(fullPost);
