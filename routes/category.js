@@ -36,7 +36,6 @@ const { Op } = require("sequelize");
  *                          example: "카테고리 생성에 성공했습니다."
  */
 router.post('/', async (req, res, next) => {
-    console.log(req);
     try {
         const exCategory = await Category.findOne({
             where: { label: req.body.label }
@@ -60,6 +59,50 @@ router.post('/', async (req, res, next) => {
             order: [
                 ['id', 'ASC']
             ],
+            include:[{
+                model: SubCategory
+            }]
+        });
+        res.status(201).json(categories);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// ADD SUBCATEGORY // POST /category/1
+router.post('/:categoryId', async (req, res, next) => {
+    try {
+        // retrieve the main category exist
+        const mainCategory = await Category.findOne({
+            where: { id: parseInt(req.params.categoryId, 10) }
+        });
+        if(!mainCategory) {
+            return res.status(403).send("메인 카테고리가 존재하지 않습니다.");
+        };
+        // find the last order within the Main Category
+        const subCategoryOrders = await SubCategory.findAll({
+            where: { CategoryId : parseInt(req.params.categoryId, 10) },
+            attributes: ['order'],
+            raw: true,
+        });
+        let orders = subCategoryOrders.map(v => v.order);
+        const order = Math.max(...orders) + 1 || 1;
+        // create a new subCategory
+        await SubCategory.create({
+            label: req.body.label,
+            domain: req.body.domain,
+            enabled: false,
+            order: order,
+            CategoryId: parseInt(req.params.categoryId, 10)
+        });
+        const categories = await Category.findAll({
+            order: [
+                ['id', 'ASC']
+            ],
+            include:[{
+                model: SubCategory
+            }]
         });
         res.status(201).json(categories);
     } catch (error) {
@@ -164,7 +207,7 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
             attributes: ['order']
         });
         let categoryOrder = await Category.findOne({
-            where: { id: req.params.categoryId }
+            where: { id: parseInt(req.params.categoryId, 10) }
         }, {
             attributes: ['order']
         }, );
@@ -182,7 +225,7 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
             enabled: req.body.checked,
             order: order,
         }, {
-            where: { id: req.params.categoryId }
+            where: { id: parseInt(req.params.categoryId, 10) }
         });
         // In case of checked is false, rearrange orders
         let newOrders = await Category.findAll({
@@ -198,7 +241,66 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
                 where: { order: { [Op.gt]: categoryOrder } }
             });
         };
-        res.status(200).json({ categoryId: req.params.categoryId, enabled: req.body.checked });
+        const allCategories = await Category.findAll({
+            include: [{
+                model: SubCategory
+            }]
+        })
+        res.status(200).json(allCategories);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// SET CATEGORY ENABLE // patch /category/1/subEnable
+router.patch('/:subCategoryId/subEnable', async (req, res, next) => {
+    try {
+        // get current 'Order' columns and max value
+        let orders = await Category.findAll({
+            attributes: ['order']
+        });
+        let categoryOrder = await Category.findOne({
+            where: { id: parseInt(req.params.categoryId, 10) }
+        }, {
+            attributes: ['order']
+        }, );
+        categoryOrder = categoryOrder.dataValues.order;
+        orders = orders.map(v => v.dataValues.order);
+        let order = null; // In case of checked to DISABLE, set null to order value
+        if(req.body.checked === 'true' || req.body.checked === true) { // In case of checked to ENABLE
+            order = 1;
+            // Max value of order col + 1
+            if(Math.max(...orders)) {
+                order = Math.max(...orders) + 1 
+            };
+        };
+        await Category.update({
+            enabled: req.body.checked,
+            order: order,
+        }, {
+            where: { id: parseInt(req.params.categoryId, 10) }
+        });
+        // In case of checked is false, rearrange orders
+        let newOrders = await Category.findAll({
+            attributes: ['order']
+        }, {
+            where: { enabled: true }
+        });
+        newOrders = newOrders.map(v => v.dataValues.order);
+        if((req.body.checked === 'false' || req.body.checked === false) && Math.max(...newOrders)) {
+            await Category.increment({
+                order: -1
+            }, {
+                where: { order: { [Op.gt]: categoryOrder } }
+            });
+        };
+        const allCategories = await Category.findAll({
+            include: [{
+                model: SubCategory
+            }]
+        })
+        res.status(200).json(allCategories);
     } catch (error) {
         console.error(error);
         next(error);
