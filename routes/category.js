@@ -2,7 +2,7 @@ const express = require('express');
 const { Category, SubCategory } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 
 // ADD CATEGORY // POST /category
 /**
@@ -48,7 +48,7 @@ router.post('/', async (req, res, next) => {
             raw: true,
         });
         let orders = categoryOrders.map(v => v.order);
-        const order = Math.max(...orders) + 1 || 1;
+        const order = orders.length === 0 ? 1 : Math.max(...orders) + 1;
         await Category.create({
             label: req.body.label,
             domain: req.body.domain,
@@ -87,8 +87,9 @@ router.post('/:categoryId', async (req, res, next) => {
             raw: true,
         });
         let orders = subCategoryOrders.map(v => v.order);
-        const order = Math.max(...orders) + 1 || 1;
+        const order = orders.length === 0 ? 1 : Math.max(...orders) + 1;
         // create a new subCategory
+        console.log(req.body, order);
         await SubCategory.create({
             label: req.body.label,
             domain: req.body.domain,
@@ -111,49 +112,14 @@ router.post('/:categoryId', async (req, res, next) => {
     };
 });
 
-// LOAD CATEGORIES // GET /category
-/**
- * @openapi
- * /category:
- *   get:
- *     tags:
- *       - category
- *     description: Get the categories
- *     summary: Get the categories
- *     responses:
- *       200:
- *              description: "CATEGORIES LIST"
- *              content:
- *                application/json:
- *                  schema:
- *                    type: 'object'
- *                    properties:
- *                      categories:
- *                          type: array
- *                          example: ['MBTI', 'TOP100']
- */
+// LOAD CATEGORIES AND SUBCATEGORIES // GET /category
 router.get('/', async (req, res, next) => {
-    try {
-        const categories = await Category.findAll({
-            order: [
-                ['id', 'ASC']
-            ],
-        });
-        res.status(200).send(categories);
-    } catch (error) {
-        console.error(error);
-        next(error);
-    }
-});
-
-// LOAD CATEGORIES AND SUBCATEGORIES // GET /category/withSubs
-router.get('/withSubs', async (req, res, next) => {
     try {
         const categories = await Category.findAll({
             order: [
                 ['order', 'ASC']
             ],
-            where: { enabled: true },
+            // where: { enabled: true },
             include: [{
                 model: SubCategory,
                 order: [
@@ -172,7 +138,7 @@ router.get('/withSubs', async (req, res, next) => {
     } catch (error) {
         console.error(error);
         next(error);
-    }
+    };
 });
 
 // SET CATEGORY ENABLE // patch /category/1/enable
@@ -220,6 +186,11 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
             if(Math.max(...orders)) {
                 order = Math.max(...orders) + 1 
             };
+            await SubCategory.update({
+                enabled: true
+            }, {
+                where: { CategoryId : parseInt(req.params.categoryId ,10)}
+            });
         };
         await Category.update({
             enabled: req.body.checked,
@@ -240,6 +211,11 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
             }, {
                 where: { order: { [Op.gt]: categoryOrder } }
             });
+            await SubCategory.update({
+                enabled: false
+            }, {
+                where: { CategoryId : parseInt(req.params.categoryId ,10)}
+            });
         };
         const allCategories = await Category.findAll({
             include: [{
@@ -257,16 +233,18 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
 router.patch('/:subCategoryId/subEnable', async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
-        let orders = await Category.findAll({
-            attributes: ['order']
+        const targetSubCategory = await SubCategory.findOne({
+            where: { id: parseInt(req.params.subCategoryId, 10) },
+            raw: true,
         });
-        let categoryOrder = await Category.findOne({
-            where: { id: parseInt(req.params.categoryId, 10) }
-        }, {
-            attributes: ['order']
-        }, );
-        categoryOrder = categoryOrder.dataValues.order;
-        orders = orders.map(v => v.dataValues.order);
+        if(!targetSubCategory) {
+            return res.status(403).send('존재하지 않는 서브 카테고리입니다.');
+        };
+        let orders = await SubCategory.findAll({
+            attributes: ['order'],
+            where: { CategoryId : targetSubCategory.CategoryId }
+        });
+        orders = orders.map(v => v.order);
         let order = null; // In case of checked to DISABLE, set null to order value
         if(req.body.checked === 'true' || req.body.checked === true) { // In case of checked to ENABLE
             order = 1;
@@ -275,24 +253,25 @@ router.patch('/:subCategoryId/subEnable', async (req, res, next) => {
                 order = Math.max(...orders) + 1 
             };
         };
-        await Category.update({
+        await SubCategory.update({
             enabled: req.body.checked,
             order: order,
         }, {
-            where: { id: parseInt(req.params.categoryId, 10) }
+            where: { id: parseInt(req.params.subCategoryId, 10) }
         });
         // In case of checked is false, rearrange orders
-        let newOrders = await Category.findAll({
-            attributes: ['order']
-        }, {
-            where: { enabled: true }
+        let newOrders = await SubCategory.findAll({
+            attributes: ['order'],
+            where: { CategoryId : targetSubCategory.CategoryId, enabled: true },
+            raw: true,
         });
-        newOrders = newOrders.map(v => v.dataValues.order);
+        newOrders = newOrders.map(v => v.order);
+        console.log(newOrders);
         if((req.body.checked === 'false' || req.body.checked === false) && Math.max(...newOrders)) {
-            await Category.increment({
+            await SubCategory.increment({
                 order: -1
             }, {
-                where: { order: { [Op.gt]: categoryOrder } }
+                where: { CategoryId : targetSubCategory.CategoryId, order: { [Op.gt]: targetSubCategory.order } }
             });
         };
         const allCategories = await Category.findAll({

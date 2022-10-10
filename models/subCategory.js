@@ -20,7 +20,6 @@ module.exports = class SubCategory extends Model {
             order: {
                 type: DataTypes.INTEGER,
                 allowNull: true,
-                unique: 'order',
             }
         }, {
             modelName: 'SubCategory',
