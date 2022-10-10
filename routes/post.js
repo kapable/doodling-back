@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
-const { Comment, Post, SubCategory, User, PostReport, PostView  } = require('../models');
+const { Comment, Post, SubCategory, User, PostReport, PostView, Category, PostLike  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
@@ -124,6 +124,10 @@ router.post('/', async (req, res, next) => {
             include: [{
                 model: SubCategory,
                 attributes: ['domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['domain']
+                }]
             }]
         });
         res.status(201).json(fullPost);
@@ -176,9 +180,12 @@ router.get('/:postId', async (req, res, next) => {
                     model: Comment,
                     as: 'ReComment'
                 }]
-            }]
+            }],
         });
-        res.status(200).json(fullPost);
+        const postLikers = await fullPost.getPostLikers();
+        let rawFullPost = fullPost.get({ plain: true });
+        rawFullPost.PostLikers = postLikers.length;
+        res.status(200).json(rawFullPost);
     } catch (error) {
         console.error(error);
         next(error);
