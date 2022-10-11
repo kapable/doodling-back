@@ -220,12 +220,15 @@ router.get('/:userId', async (req, res, next) => {
                 exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
             },
             include: [{
-                model: Post
+                model: Post,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
             }, {
-                model: Comment
+                model: Comment,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
             }, {
                 model: Post,
-                as: 'PostLiked'
+                as: 'PostLiked',
+                attributes: ['id']
             }]
         });
         res.status(200).json(fullUserWithoutPassword);
