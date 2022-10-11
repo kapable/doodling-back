@@ -359,7 +359,7 @@ router.patch('/:postId/view', async (req, res, next) => {
         const viewedCategory = await viewedSubCategory.getCategory();
         await PostView.create({
             PostId: req.params.postId,
-            UserId: req?.body?.id ? req.body.id :  null ,
+            UserId: req?.user?.id ||  null,
             SubCategoryId: parseInt(viewedSubCategory.dataValues.id, 10),
             CategoryId: parseInt(viewedCategory.dataValues.id, 10),
         });
