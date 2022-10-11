@@ -111,7 +111,7 @@ router.post(`/images`, upload.array('image'), async (req, res, next) => { // POS
 router.post('/', async (req, res, next) => {
     try {
         const post = await Post.create({
-            UserId: parseInt(req.body.userId, 10),
+            UserId: parseInt(req.user.id, 10),
             title: req.body.title,
             text: req.body.text,
             SubCategoryId: parseInt(req.body.subCategoryId, 10),
@@ -170,7 +170,11 @@ router.get('/:postId', async (req, res, next) => {
             where: { id: parseInt(req.params.postId, 10)},
             include: [{
                 model: SubCategory,
-                attributes: ['id', 'label']
+                attributes: ['id', 'label'],
+                include:[{
+                    model: Category,
+                    attributes: ['id', 'label']
+                }]
             }, {
                 model: User,
                 attributes: ['id', 'nickname', 'mbti']
@@ -269,6 +273,46 @@ router.post('/:postId/comment', async (req, res, next) => {
     };
 });
 
+// UPDATE A POST CONTENTS // PATCH /post/1
+router.patch('/:postId', async (req, res, next) => {
+    try {
+        const reqUser = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+            attributes: ['id' ,'admin'],
+        });
+        const reqPost = await Post.findOne({
+            where: { id: req.params.postId },
+            attributes: ['id', 'title', 'UserId'],
+        });
+        if(!reqPost) {
+            return res.status(403).send('해당 포스트가 존재하지 않습니다.');
+        };
+        if(reqUser.id !== reqPost.UserId || reqUser.admin) {
+            return res.status(401).send('글쓴이 또는 어드민만 수정할 수 있습니다.');
+        };
+        const fullPost = await Post.update({
+            title: req.body.title,
+            text: req.body.text,
+            SubCategoryId: parseInt(req.body.subCategoryId, 10),
+        }, {
+            where: { id: reqPost.id },
+            attributes: ['id'],
+            include: [{
+                model: SubCategory,
+                attributes: ['domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['domain']
+                }]
+            }]
+        });
+        res.status(201).json(fullPost);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // SET A POST ENABLE // PATCH /post/1/enable
 router.patch('/:postId/enable', async (req, res, next) => {
     try {
@@ -276,23 +320,45 @@ router.patch('/:postId/enable', async (req, res, next) => {
             where: { id: parseInt(req.user.id, 10) },
             attributes: ['id' ,'admin'],
         });
-        if(!reqUser.admin) {
-            return res.status(401).send('해당 기능에 접근 권한이 없습니다.');
-        };
-
         const reqPost = await Post.findOne({
             where: { id: req.params.postId },
-            attributes: ['id', 'title'],
+            attributes: ['id', 'title', 'UserId'],
         });
         if(!reqPost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
+        if(reqUser.id !== reqPost.UserId || reqUser.admin) {
+            return res.status(401).send('글쓴이 또는 어드민만 수정할 수 있습니다.');
+        };
         await Post.update({
             enabled: req.body.checked,
         }, {
-            where: { id: reqPost.id }
+            where: { id: reqPost.id },
         });
-        res.status(200).send(`${reqPost.title} 포스트는 볼 수 ${req.body.checked === true || req.body.checked === 'true'? '있' : '없'}습니다.`);
+        const fullPost = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10)},
+            include: [{
+                model: SubCategory,
+                attributes: ['id', 'label'],
+                include:[{
+                    model: Category,
+                    attributes: ['id', 'label']
+                }]
+            }, {
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            }, {
+                model: Comment,
+                include: [{
+                    model: Comment,
+                    as: 'ReComment'
+                }]
+            }],
+        });
+        const postLikers = await fullPost.getPostLikers();
+        let rawFullPost = fullPost.get({ plain: true });
+        rawFullPost.PostLikers = postLikers.length;
+        res.status(200).json(rawFullPost);
     } catch (error) {
         console.error(error);
         next(error);
