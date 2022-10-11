@@ -182,9 +182,15 @@ router.get('/:postId', async (req, res, next) => {
                 model: Comment,
                 include: [{
                     model: Comment,
-                    as: 'ReComment'
-                }]
+                    as: 'ReComment',
+                }],
+                order: [
+                    [{ model: Comment, as: 'ReComment' }, 'createdAt', 'DESC']
+                ],
             }],
+            order: [
+                [ { model: Comment }, 'createdAt', 'DESC'],
+            ]
         });
         const postLikers = await fullPost.getPostLikers();
         let rawFullPost = fullPost.get({ plain: true });
@@ -256,7 +262,7 @@ router.post('/:postId/comment', async (req, res, next) => {
         };
         const comment = await Comment.create({
             text: req.body.text,
-            UserId: req.body.id,
+            UserId: req.user.id,
             PostId: parseInt(req.params.postId, 10),
         });
         const fullComment = await Comment.findOne({
