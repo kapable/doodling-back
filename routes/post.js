@@ -1,5 +1,5 @@
 const express = require('express');
-const { Op } = require("sequelize");
+const { Op, where } = require("sequelize");
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -180,14 +180,26 @@ router.get('/:postId', async (req, res, next) => {
                 attributes: ['id', 'nickname', 'mbti']
             }, {
                 model: Comment,
+                where: { ReCommentId: null },
                 include: [{
+                    model: User,
+                    attributes: ['id', 'nickname', 'mbti'],
+                }, {
                     model: Comment,
                     as: 'ReComment',
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }]
+                }, {
+                    model: User,
+                    as: 'CommentLikers',
+                    attributes: ['id']
                 }],
                 order: [
                     [{ model: Comment, as: 'ReComment' }, 'createdAt', 'DESC']
                 ],
-            }],
+            },],
             order: [
                 [ { model: Comment }, 'createdAt', 'DESC'],
             ]

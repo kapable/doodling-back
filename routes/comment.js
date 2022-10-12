@@ -69,7 +69,7 @@ router.post('/:commentId/reComment', async (req, res, next) => {
         };
         const reComment = await Comment.create({
             text: req.body.text,
-            UserId: req.body.userId,
+            UserId: req.body.id,
             PostId: parseInt(req.body.postId, 10),
             ReCommentId: parseInt(req.params.commentId, 10)
         });
@@ -94,8 +94,9 @@ router.patch('/:commentId/like', async (req, res, next) => {
         if(!likeComment) {
             return res.status(403).send('해당 댓글이 존재하지 않습니다.');
         }
-        await likeComment.addCommentLikers(parseInt(req.body.id, 10));
-        res.status(200).json({ CommentId: likeComment.id, UserId: parseInt(req.body.id, 10) });
+        await likeComment.addCommentLikers(parseInt(req.user.id, 10));
+        const likers = await likeComment.getCommentLikers({ attributes: ['id'] })
+        res.status(200).json({ id: likeComment.id, likers });
     } catch (error) {
         console.error(error);
         next(error);
@@ -105,12 +106,13 @@ router.patch('/:commentId/like', async (req, res, next) => {
 // REMOVE LIKE A COMMENT // DELETE /comment/1/like
 router.delete('/:commentId/like', async (req, res, next) => {
     try {
-        const likeComment = await Comment.findOne({ where: { id: req.params.commentId } });
-        if(!likeComment) {
+        const unLikeComment = await Comment.findOne({ where: { id: req.params.commentId } });
+        if(!unLikeComment) {
             return res.status(403).send('해당 댓글이 존재하지 않습니다.');
         };
-        await likeComment.removeCommentLikers(parseInt(req.body.id, 10));
-        res.status(200).json({ CommentId: likeComment.id, UserId: parseInt(req.body.id, 10) });
+        await unLikeComment.removeCommentLikers(parseInt(req.user.id, 10));
+        const likers = await unLikeComment.getCommentLikers({ attributes: ['id'] })
+        res.status(200).json({ id: unLikeComment.id, likers });
     } catch (error) {
         console.error(error);
         next(error);

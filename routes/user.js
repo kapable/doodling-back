@@ -229,6 +229,10 @@ router.get('/:userId', async (req, res, next) => {
                 model: Post,
                 as: 'PostLiked',
                 attributes: ['id']
+            }, {
+                model: Comment,
+                as: 'CommentLiked',
+                attributes: ['id']
             }]
         });
         res.status(200).json(fullUserWithoutPassword);
