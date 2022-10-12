@@ -114,6 +114,7 @@ router.post('/', isLoggedIn, async (req, res, next) => {
             UserId: parseInt(req.user.id, 10),
             title: req.body.title,
             text: req.body.text,
+            CategoryId: req.body.categoryId,
             SubCategoryId: parseInt(req.body.subCategoryId, 10),
             enabled: true,
             views: 0,
@@ -311,6 +312,7 @@ router.patch('/:postId', isLoggedIn, async (req, res, next) => {
         const fullPost = await Post.update({
             title: req.body.title,
             text: req.body.text,
+            CategoryId: req.body.categoryId,
             SubCategoryId: parseInt(req.body.subCategoryId, 10),
         }, {
             where: { id: reqPost.id },

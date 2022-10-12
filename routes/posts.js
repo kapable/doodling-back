@@ -1,6 +1,6 @@
 const express = require('express');
-const { Op } = require("sequelize");
-const { Post, TopPost, SubCategory  } = require('../models');
+const { Op, fn, col } = require("sequelize");
+const { Post, TopPost, SubCategory, Category, User, PostLike  } = require('../models');
 const router = express.Router();
 
 // GET REALTIME TOP 100 // GET /posts/top100RealTime
@@ -178,6 +178,40 @@ router.get('/:categoryId/new5Category', async (req, res, next) => {
             order: [["createdAt", 'DESC']]
         });
         res.status(200).json(categoryNewPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [for main home page] GET CATEGORY NEW 5 POSTS // GET /posts/new5Categories
+router.get('/new5Categories', async (req, res, next) => {
+    try {
+        const categories = await Category.findAll({
+            where: { [Op.and]: [
+                { domain: { [Op.not]: '' } },
+                { domain: { [Op.not]: 'top100' } },
+            ]},
+            attributes: ['id', 'label'],
+            raw: true,
+        });
+        console.log(categories);
+        let newContents = []; 
+        await Promise.all(categories.map(async (cat) => {
+            let new5Contents = await Post.findAll({
+                where: { CategoryId: cat.id },
+                order: [['createdAt', 'DESC']],
+                limit: 5,
+                attributes: ['id', 'title', 'createdAt'],
+                include: [{
+                    model: User,
+                    attributes: ['id', 'mbti']
+                },],
+                raw: true,
+            });
+            return newContents.push({ id: cat.id, label: cat.label, posts: new5Contents });
+        }));
+        res.status(200).json(newContents);
     } catch (error) {
         console.error(error);
         next(error);
