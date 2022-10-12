@@ -49,7 +49,7 @@ const upload = multer({
 });
 
 // ADD IMAGES
-router.post(`/images`, upload.array('image'), async (req, res, next) => { // POST /post/images
+router.post(`/images`, isLoggedIn, upload.array('image'), async (req, res, next) => { // POST /post/images
     try {
         res.status(200).json(req.files.map((v) => process.env.NODE_ENV === 'production' ? `https://images.doodling.kr/${v.key}`.replace(/\/original\//, '/resized/') : `${process.env.DEV_BACKURL}/${v.filename}`));
     } catch (error) {
@@ -108,7 +108,7 @@ router.post(`/images`, upload.array('image'), async (req, res, next) => { // POS
  *                                  },
  *                      }
  */
-router.post('/', async (req, res, next) => {
+router.post('/', isLoggedIn, async (req, res, next) => {
     try {
         const post = await Post.create({
             UserId: parseInt(req.user.id, 10),
@@ -264,7 +264,7 @@ router.get('/:postId', async (req, res, next) => {
  *                                  },
  *                      }
  */
-router.post('/:postId/comment', async (req, res, next) => {
+router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
     try {
         const post = await Post.findOne({
             where: { id: parseInt(req.params.postId, 10) }
@@ -292,7 +292,7 @@ router.post('/:postId/comment', async (req, res, next) => {
 });
 
 // UPDATE A POST CONTENTS // PATCH /post/1
-router.patch('/:postId', async (req, res, next) => {
+router.patch('/:postId', isLoggedIn, async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
             where: { id: parseInt(req.user.id, 10) },
@@ -332,7 +332,7 @@ router.patch('/:postId', async (req, res, next) => {
 });
 
 // SET A POST ENABLE // PATCH /post/1/enable
-router.patch('/:postId/enable', async (req, res, next) => {
+router.patch('/:postId/enable', isLoggedIn, async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
             where: { id: parseInt(req.user.id, 10) },

@@ -35,7 +35,7 @@ const { Op, where } = require("sequelize");
  *                          type: string
  *                          example: "카테고리 생성에 성공했습니다."
  */
-router.post('/', async (req, res, next) => {
+router.post('/', isLoggedIn, async (req, res, next) => {
     try {
         const exCategory = await Category.findOne({
             where: { label: req.body.label }
@@ -71,7 +71,7 @@ router.post('/', async (req, res, next) => {
 });
 
 // ADD SUBCATEGORY // POST /category/1
-router.post('/:categoryId', async (req, res, next) => {
+router.post('/:categoryId', isLoggedIn, async (req, res, next) => {
     try {
         // retrieve the main category exist
         const mainCategory = await Category.findOne({
@@ -166,7 +166,7 @@ router.get('/', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/:categoryId/enable', async (req, res, next) => {
+router.patch('/:categoryId/enable', isLoggedIn, async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
         let orders = await Category.findAll({
@@ -229,8 +229,8 @@ router.patch('/:categoryId/enable', async (req, res, next) => {
     };
 });
 
-// SET CATEGORY ENABLE // patch /category/1/subEnable
-router.patch('/:subCategoryId/subEnable', async (req, res, next) => {
+// SET SUBCATEGORY ENABLE // patch /category/1/subEnable
+router.patch('/:subCategoryId/subEnable', isLoggedIn, async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
         const targetSubCategory = await SubCategory.findOne({

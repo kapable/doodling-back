@@ -53,7 +53,7 @@ const router = express.Router();
  *                                  },
  *                      }
  */
-router.post('/:commentId/reComment', async (req, res, next) => {
+router.post('/:commentId/reComment', isLoggedIn, async (req, res, next) => {
     try {
         const exComment = await Comment.findOne({
             where: { id: parseInt(req.params.commentId, 10) }
@@ -88,7 +88,7 @@ router.post('/:commentId/reComment', async (req, res, next) => {
 });
 
 // LIKE A COMMENT // PATCH /comment/1/like
-router.patch('/:commentId/like', async (req, res, next) => {
+router.patch('/:commentId/like', isLoggedIn, async (req, res, next) => {
     try {
         const likeComment = await Comment.findOne({ where: { id: req.params.commentId } });
         if(!likeComment) {
@@ -104,7 +104,7 @@ router.patch('/:commentId/like', async (req, res, next) => {
 });
 
 // REMOVE LIKE A COMMENT // DELETE /comment/1/like
-router.delete('/:commentId/like', async (req, res, next) => {
+router.delete('/:commentId/like', isLoggedIn, async (req, res, next) => {
     try {
         const unLikeComment = await Comment.findOne({ where: { id: req.params.commentId } });
         if(!unLikeComment) {

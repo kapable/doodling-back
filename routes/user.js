@@ -243,7 +243,7 @@ router.get('/:userId', async (req, res, next) => {
 });
 
 // FOLLOW A USER // PATCH /user/1/follow
-router.patch('/:userId/follow', async (req, res, next) => {
+router.patch('/:userId/follow', isLoggedIn, async (req, res, next) => {
     try {
         const user = await User.findOne({ where: { id: req.params.userId }});
         if(!user) {
@@ -258,7 +258,7 @@ router.patch('/:userId/follow', async (req, res, next) => {
 });
 
 // UNFOLLOW A USER // delete /user/1/unfollow
-router.delete('/:userId/unfollow', async (req, res, next) => {
+router.delete('/:userId/unfollow', isLoggedIn, async (req, res, next) => {
     try {
         const user = await User.findOne({ where: { id: req.params.userId }});
         if(!user) {
@@ -331,7 +331,7 @@ router.get('/:userId/followings', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/nickname', async (req, res, next) => {
+router.patch('/nickname', isLoggedIn, async (req, res, next) => {
     try {
         User.update({
             nickname: req.body.nickname,
@@ -372,7 +372,7 @@ router.patch('/nickname', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/description', async (req, res, next) => {
+router.patch('/description', isLoggedIn, async (req, res, next) => {
     try {
         User.update({
             description: req.body.description,
@@ -389,7 +389,7 @@ router.patch('/description', async (req, res, next) => {
 });
 
 // CHANGE MBTI // PATCH /user/mbti
-router.patch('/mbti', async (req, res, next) => {
+router.patch('/mbti', isLoggedIn, async (req, res, next) => {
     try {
         User.update({
             mbti: req.body.mbti,
@@ -406,7 +406,7 @@ router.patch('/mbti', async (req, res, next) => {
 });
 
 // SET USER ENABLE // PATCH /user/enable
-router.patch('/:userId/enable', async (req, res, next) => {
+router.patch('/:userId/enable', isLoggedIn, async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
             where: { id: parseInt(req.user.id, 10) },
@@ -436,7 +436,7 @@ router.patch('/:userId/enable', async (req, res, next) => {
 });
 
 // SET USER ADMIN // PATCH /user/admin
-router.patch('/admin', async (req, res, next) => {
+router.patch('/admin', isLoggedIn, async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
             where: { id: parseInt(req.user.id, 10) },
@@ -466,7 +466,7 @@ router.patch('/admin', async (req, res, next) => {
 });
 
 // SET USER ADSADMIN // PATCH /user/adsAdmin
-router.patch('/adsAdmin', async (req, res, next) => {
+router.patch('/adsAdmin', isLoggedIn, async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
             where: { id: parseInt(req.user.id, 10) },

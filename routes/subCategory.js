@@ -35,7 +35,7 @@ const { Op } = require("sequelize");
  *                          type: string
  *                          example: "서브 카테고리 생성에 성공했습니다."
  */
-router.post('/', async (req, res, next) => {
+router.post('/', isLoggedIn, async (req, res, next) => {
     try {
         const exSubCategory = await SubCategory.findOne({
             where: { label: req.body.label }
@@ -131,7 +131,7 @@ router.get('/', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/:subCategoryId/enable', async (req, res, next) => {
+router.patch('/:subCategoryId/enable', isLoggedIn, async (req, res, next) => {
     try {
         // get current 'Order' columns and max value
         let orders = await SubCategory.findAll({
