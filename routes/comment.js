@@ -1,4 +1,5 @@
 const express = require('express');
+const { Op } = require('sequelize');
 const { Comment, Post, User  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
@@ -113,6 +114,46 @@ router.delete('/:commentId/like', isLoggedIn, async (req, res, next) => {
         await unLikeComment.removeCommentLikers(parseInt(req.user.id, 10));
         const likers = await unLikeComment.getCommentLikers({ attributes: ['id'] })
         res.status(200).json({ id: unLikeComment.id, likers });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// LOAD MORE COMMENTS OF A POST // GET /comment/1
+router.get('/:postId', async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10) },
+            attributes: ['id']
+        });
+        if(!post) {
+            return res.status(403).send('존재하지 않는 게시글입니다');
+        };
+        const fullComments = await Comment.findAll({
+            where: {
+                id: { [Op.lt]: parseInt(req.query.lastId ,10)},
+                PostId: parseInt(req.params.postId, 10)
+            },
+            limit: 10,
+            order: [['createdAt', 'DESC']],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti'],
+            }, {
+                model: Comment,
+                as: 'ReComment',
+                include: [{
+                    model: User,
+                    attributes: ['id', 'nickname', 'mbti']
+                }]
+            }, {
+                model: User,
+                as: 'CommentLikers',
+                attributes: ['id']
+            }]
+        });
+        res.status(201).json(fullComments);
     } catch (error) {
         console.error(error);
         next(error);

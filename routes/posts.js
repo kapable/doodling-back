@@ -192,10 +192,9 @@ router.get('/new5Categories', async (req, res, next) => {
                 { domain: { [Op.not]: '' } },
                 { domain: { [Op.not]: 'top100' } },
             ]},
-            attributes: ['id', 'label'],
+            attributes: ['id', 'label', 'domain'],
             raw: true,
         });
-        console.log(categories);
         let newContents = []; 
         await Promise.all(categories.map(async (cat) => {
             let new5Contents = await Post.findAll({
@@ -206,10 +205,13 @@ router.get('/new5Categories', async (req, res, next) => {
                 include: [{
                     model: User,
                     attributes: ['id', 'mbti']
-                },],
+                }, {
+                    model: SubCategory,
+                    attributes: ['id', 'domain']
+                }],
                 raw: true,
             });
-            return newContents.push({ id: cat.id, label: cat.label, posts: new5Contents });
+            return newContents.push({ id: cat.id, label: cat.label, domain: cat.domain, posts: new5Contents });
         }));
         res.status(200).json(newContents);
     } catch (error) {

@@ -181,7 +181,6 @@ router.get('/:postId', async (req, res, next) => {
                 attributes: ['id', 'nickname', 'mbti']
             }, {
                 model: Comment,
-                where: { ReCommentId: null },
                 include: [{
                     model: User,
                     attributes: ['id', 'nickname', 'mbti'],
@@ -198,16 +197,17 @@ router.get('/:postId', async (req, res, next) => {
                     attributes: ['id']
                 }],
                 order: [
-                    [{ model: Comment, as: 'ReComment' }, 'createdAt', 'DESC']
+                    ['createdAt', 'DESC']
                 ],
+                separate: true,
+                limit: 10,
             },],
-            order: [
-                [ { model: Comment }, 'createdAt', 'DESC'],
-            ]
         });
-        const postLikers = await fullPost.getPostLikers();
+        const postLikers = await fullPost.getPostLikers({ attributes: ['id'] });
+        const postComments = await fullPost.getComments({ attributes: ['id'] });
         let rawFullPost = fullPost.get({ plain: true });
         rawFullPost.PostLikers = postLikers.length;
+        rawFullPost.PostComments = postComments.length;
         res.status(200).json(rawFullPost);
     } catch (error) {
         console.error(error);
@@ -283,7 +283,11 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
             include: [{
                 model: User,
                 attributes: ['id', 'nickname', 'mbti']
-            },]
+            }, {
+                model: User,
+                as: 'CommentLikers',
+                attributes: ['id']
+            }]
         });
         res.status(201).json(fullComment);
     } catch (error) {
