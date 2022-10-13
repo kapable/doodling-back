@@ -204,7 +204,7 @@ router.get('/new5Categories', async (req, res, next) => {
                 attributes: ['id', 'title', 'createdAt'],
                 include: [{
                     model: User,
-                    attributes: ['id', 'mbti']
+                    attributes: ['id', 'nickname', 'mbti']
                 }, {
                     model: SubCategory,
                     attributes: ['id', 'domain']
