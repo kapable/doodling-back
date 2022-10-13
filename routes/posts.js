@@ -1,6 +1,6 @@
 const express = require('express');
-const { Op, fn, col } = require("sequelize");
-const { Post, TopPost, SubCategory, Category, User, PostLike  } = require('../models');
+const { Op, fn, col, where } = require("sequelize");
+const { Post, TopPost, SubCategory, Category, User, PostLike, PostView  } = require('../models');
 const router = express.Router();
 
 // GET REALTIME TOP 100 // GET /posts/top100RealTime
@@ -142,19 +142,29 @@ router.get('/:subCategoryId/top5SubCategoryRealTime', async (req, res, next) => 
     };
 });
 
-// GET CATEGORY NEW 15 POSTS // GET /posts/:categoryId/new15Category
-router.get('/:categoryId/new15Category', async (req, res, next) => {
+// [each category main page] GET CATEGORY NEW 15 POSTS // GET /posts/:categoryId/new15Category
+router.get('/:categoryDomain/new15Category', async (req, res, next) => {
     try {
         let subCategories = await SubCategory.findAll({
-            where: { CategoryId: parseInt(req.params.categoryId , 10) },
+            // where: { CategoryId: parseInt(req.params.categoryId , 10) },
             attributes: ['id'],
+            include: [{
+                model: Category,
+                attributes: ['id', 'domain'],
+                where: { domain: req.params.categoryDomain }
+            }],
             raw: true
         });
         subCategories = subCategories.map(v => v.id)
         const categoryNewPosts = await Post.findAll({
             where: { SubCategoryId: { [Op.in]: subCategories } },
             limit: 15,
-            order: [["createdAt", 'DESC']]
+            order: [["createdAt", 'DESC']],
+            attributes: ['id', 'title', 'createdAt', 'views', 'likes'],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            },],
         });
         res.status(200).json(categoryNewPosts);
     } catch (error) {
@@ -174,8 +184,13 @@ router.get('/:categoryId/new5Category', async (req, res, next) => {
         subCategories = subCategories.map(v => v.id)
         const categoryNewPosts = await Post.findAll({
             where: { SubCategoryId: { [Op.in]: subCategories } },
-            limit: 5,
-            order: [["createdAt", 'DESC']]
+            limit: 15,
+            order: [["createdAt", 'DESC']],
+            attributes: ['id', 'title', 'createdAt', 'views', 'likes'],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            },],
         });
         res.status(200).json(categoryNewPosts);
     } catch (error) {
@@ -184,7 +199,7 @@ router.get('/:categoryId/new5Category', async (req, res, next) => {
     };
 });
 
-// [for main home page] GET CATEGORY NEW 5 POSTS // GET /posts/new5Categories
+// [main home page] GET CATEGORY NEW 5 POSTS // GET /posts/new5Categories
 router.get('/new5Categories', async (req, res, next) => {
     try {
         const categories = await Category.findAll({
@@ -220,13 +235,18 @@ router.get('/new5Categories', async (req, res, next) => {
     };
 });
 
-// GET SUBCATEGORY NEW 15 POSTS // GET /posts/:subCategoryId/new15SubCategory
+// [each subCategory page] GET SUBCATEGORY NEW 15 POSTS // GET /posts/:subCategoryId/new15SubCategory
 router.get('/:subCategoryId/new15SubCategory', async (req, res, next) => {
     try {
         const subCategoryNewPosts = await Post.findAll({
             where: { SubCategoryId: parseInt(req.params.subCategoryId ,10) },
             limit: 15,
-            order: [["createdAt", 'DESC']]
+            order: [["createdAt", 'DESC']],
+            attributes: ['id', 'title', 'createdAt', 'views', 'likes'],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            },],
         });
         res.status(200).json(subCategoryNewPosts);
     } catch (error) {

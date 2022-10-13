@@ -397,6 +397,7 @@ router.patch('/:postId/like', isLoggedIn, async (req, res, next) => {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         }
         await likePost.addPostLikers(parseInt(req.user.id, 10));
+        await likePost.increment({ likes: 1 });
         res.status(200).json({ id: likePost.id, UserId: parseInt(req.user.id, 10) });
     } catch (error) {
         console.error(error);
@@ -412,6 +413,7 @@ router.delete('/:postId/like', isLoggedIn, async (req, res, next) => {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
         await likePost.removePostLikers(parseInt(req.user.id, 10));
+        await likePost.increment({ likes: -1 });
         res.status(200).json({ id: likePost.id, UserId: parseInt(req.user.id, 10) });
     } catch (error) {
         console.error(error);

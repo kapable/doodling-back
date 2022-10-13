@@ -24,6 +24,10 @@ module.exports = class Post extends Model {
             views: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+            },
+            likes: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
             }
         }, {
             modelName: 'Post',
