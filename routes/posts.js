@@ -164,7 +164,14 @@ router.get('/:categoryDomain/new15Category', async (req, res, next) => {
             include: [{
                 model: User,
                 attributes: ['id', 'nickname', 'mbti']
-            },],
+            }, {
+                model: SubCategory,
+                attributes: ['id', 'domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'domain'],
+                }]
+            }],
         });
         res.status(200).json(categoryNewPosts);
     } catch (error) {
