@@ -289,6 +289,7 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
                 attributes: ['id']
             }]
         });
+        await post.increment({ comments: 1 });
         res.status(201).json(fullComment);
     } catch (error) {
         console.error(error);

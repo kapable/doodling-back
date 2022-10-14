@@ -28,6 +28,10 @@ module.exports = class Post extends Model {
             likes: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+            },
+            comments: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
             }
         }, {
             modelName: 'Post',
