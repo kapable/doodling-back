@@ -118,6 +118,8 @@ router.post('/', isLoggedIn, async (req, res, next) => {
             SubCategoryId: parseInt(req.body.subCategoryId, 10),
             enabled: true,
             views: 0,
+            likes: 0,
+            comments: 0,
         });
         const fullPost = await Post.findOne({
             where: { id: post.id },
