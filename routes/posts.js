@@ -155,10 +155,14 @@ router.get('/:categoryDomain/new15Category', async (req, res, next) => {
             }],
             raw: true
         });
-        subCategories = subCategories.map(v => v.id)
+        subCategories = subCategories.map(v => v.id);
+        let where = { SubCategoryId: { [Op.in]: subCategories } };
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
         const categoryNewPosts = await Post.findAll({
-            where: { SubCategoryId: { [Op.in]: subCategories } },
-            limit: 15,
+            where: where,
+            limit: 45,
             order: [["createdAt", 'DESC']],
             attributes: ['id', 'title', 'createdAt', 'views', 'likes'],
             include: [{
@@ -243,17 +247,33 @@ router.get('/new5Categories', async (req, res, next) => {
 });
 
 // [each subCategory page] GET SUBCATEGORY NEW 15 POSTS // GET /posts/:subCategoryId/new15SubCategory
-router.get('/:subCategoryId/new15SubCategory', async (req, res, next) => {
+router.get('/:subCategoryDomain/new15SubCategory', async (req, res, next) => {
     try {
+        const subCategory = await SubCategory.findOne({
+            where: { domain: req.params.subCategoryDomain },
+            attributes: ['id', 'domain'],
+            raw: true
+        });
+        let where = { SubCategoryId: parseInt(subCategory.id, 10) };
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
         const subCategoryNewPosts = await Post.findAll({
-            where: { SubCategoryId: parseInt(req.params.subCategoryId ,10) },
+            where: where,
             limit: 15,
             order: [["createdAt", 'DESC']],
             attributes: ['id', 'title', 'createdAt', 'views', 'likes'],
             include: [{
                 model: User,
                 attributes: ['id', 'nickname', 'mbti']
-            },],
+            }, {
+                model: SubCategory,
+                attributes: ['id', 'domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'domain'],
+                }]
+            }],
         });
         res.status(200).json(subCategoryNewPosts);
     } catch (error) {
