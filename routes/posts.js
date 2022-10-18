@@ -26,7 +26,7 @@ router.get('/top100RealTime', async (req, res, next) => {
     };
 });
 
-// GET REALTIME TOP 10 // GET /posts/top10RealTime
+// [home main page] GET REALTIME TOP 10 // GET /posts/top10RealTime
 router.get('/top10RealTime', async (req, res, next) => {
     try {
         const realTimeTopPosts = await TopPost.findAll({
@@ -107,21 +107,38 @@ router.get('/top100Monthly', async (req, res, next) => {
     };
 });
 
-// GET CATEGORY REALTIME TOP 5 // GET /posts/:categoryId/top5CategoryRealTime
-router.get('/:categoryId/top5CategoryRealTime', async (req, res, next) => {
+// GET CATEGORY REALTIME TOP 5 // GET /posts/:categoryDomain/top5CategoryRealTime
+router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
     try {
+        const category = await Category.findOne({
+            where: { domain: req.params.categoryDomain },
+            attributes: ['id'],
+            raw: true
+        });
         const categoryRealTimeTopPosts = await TopPost.findAll({
             where: {
                 [Op.and]: [
                     { realTimeRank: { [Op.not]: null } },
-                    { CategoryId: parseInt(req.params.categoryId ,10) },
+                    { CategoryId: parseInt(category.id ,10) },
                     { SubCategoryId: { [Op.is]: null } },
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
-            }]
+                attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain', 'label']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },]
+            }],
+            limit: 5,
         });
         res.status(200).json(categoryRealTimeTopPosts);
     } catch (error) {
