@@ -147,21 +147,38 @@ router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
     };
 });
 
-// GET SUBCATEGORY REALTIME TOP 5 // GET /posts/:subCategoryId/top5SubCategoryRealTime
-router.get('/:subCategoryId/top5SubCategoryRealTime', async (req, res, next) => {
+// GET SUBCATEGORY REALTIME TOP 5 // GET /posts/:subCategoryDomain/top5SubCategoryRealTime
+router.get('/:subCategoryDomain/top5SubCategoryRealTime', async (req, res, next) => {
     try {
+        const subCategory = await SubCategory.findOne({
+            where: { domain: req.params.subCategoryDomain },
+            attributes: ['id'],
+            raw: true,
+        });
         const subCategoryRealTimeTopPosts = await TopPost.findAll({
             where: {
                 [Op.and]: [
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: { [Op.is]: null } },
-                    { SubCategoryId: parseInt(req.params.subCategoryId ,10) },
+                    { SubCategoryId: parseInt(subCategory.id ,10) },
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
-            }]
+                attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain', 'label']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },]
+            }],
+            limit: 5,
         });
         res.status(200).json(subCategoryRealTimeTopPosts);
     } catch (error) {
