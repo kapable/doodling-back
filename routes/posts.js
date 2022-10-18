@@ -40,6 +40,17 @@ router.get('/top10RealTime', async (req, res, next) => {
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
+                attributes: ['id', 'title', 'createdAt', 'comments'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain', 'label']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },]
             }],
             limit: 10
         });
