@@ -246,7 +246,7 @@ router.get('/new5Categories', async (req, res, next) => {
     };
 });
 
-// [each subCategory page] GET SUBCATEGORY NEW 15 POSTS // GET /posts/:subCategoryId/new15SubCategory
+// [each subCategory page] GET SUBCATEGORY NEW 15 POSTS // GET /posts/:subCategoryDomain/new15SubCategory
 router.get('/:subCategoryDomain/new15SubCategory', async (req, res, next) => {
     try {
         const subCategory = await SubCategory.findOne({
@@ -276,6 +276,49 @@ router.get('/:subCategoryDomain/new15SubCategory', async (req, res, next) => {
             }],
         });
         res.status(200).json(subCategoryNewPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [notice main page] GET CATEGORY's EACH SUB NEW 5 POSTS // GET /posts/:categoryDomain/new5SubCategoryPosts
+router.get('/:categoryDomain/new5SubCategoryPosts', async (req, res, next) => {
+    try {
+        const category = await Category.findOne({
+            where: { domain: req.params.categoryDomain },
+            attributes: ['id', 'label', 'domain'],
+            raw: true,
+        });
+        const subCategories = await SubCategory.findAll({
+            where: { CategoryId: category.id },
+            attributes: ['id', 'label', 'domain'],
+            raw: true,
+        });
+        let newContents = []; 
+        await Promise.all(subCategories.map(async (subCat) => {
+            if(subCat?.domain !== '') { // filtering 카테고리 전체 
+                let new5Contents = await Post.findAll({
+                    where: { SubCategoryId: subCat.id },
+                    order: [['createdAt', 'DESC']],
+                    limit: 5,
+                    attributes: ['id', 'title', 'createdAt'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },],
+                    raw: true,
+                });
+                return newContents.push({ id: subCat.id, label: subCat.label, domain: subCat.domain, posts: new5Contents });
+            }
+        }));
+        res.status(200).json(newContents);
     } catch (error) {
         console.error(error);
         next(error);
