@@ -72,7 +72,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ seconds: 30, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ minutes: MINUTES, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
@@ -282,7 +282,7 @@ const categoryRealTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const categoryRealTimJob = new SimpleIntervalJob({ seconds: 30, }, categoryRealTimeTask);
+const categoryRealTimJob = new SimpleIntervalJob({ minutes: MINUTES, }, categoryRealTimeTask);
 
 // SubCategory Top
 // RealTime for a SubCategory
@@ -356,7 +356,7 @@ const subCategoryRealTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const subCategoryRealTimJob = new SimpleIntervalJob({ seconds: 30, }, subCategoryRealTimeTask);
+const subCategoryRealTimJob = new SimpleIntervalJob({ minutes: MINUTES, }, subCategoryRealTimeTask);
 
 
 module.exports = {
