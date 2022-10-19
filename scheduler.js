@@ -2,7 +2,7 @@ const { ToadScheduler, SimpleIntervalJob, AsyncTask, Task } = require('toad-sche
 const { Post, PostView, TopPost, Comment, PostLike, Category, SubCategory } = require('./models');
 const { Op } = require('sequelize');
 
-const MINUTES = 30;
+const MINUTES = 5000;
 
 const scheduler = new ToadScheduler();
 // Total

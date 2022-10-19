@@ -3,27 +3,65 @@ const { Op, fn, col, where } = require("sequelize");
 const { Post, TopPost, SubCategory, Category, User, PostLike, PostView  } = require('../models');
 const router = express.Router();
 
-// GET REALTIME TOP 100 // GET /posts/top100RealTime
-router.get('/top100RealTime', async (req, res, next) => {
+// [top100 page] GET TOP 100 WITH PERIOD // GET /posts/top100
+router.get(`/top100/:period`, async (req, res, next) => {
     try {
-        const realTimeTopPosts = await TopPost.findAll({
-            where: {
+        let where = {};
+        let attributes = ['PostId'];
+        if(req.params.period === 'realtime') {
+            where = {
                 [Op.and]: [
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: { [Op.is]: null } },
                     { SubCategoryId: { [Op.is]: null } },
                 ]
-            },
-            attributes: ['PostId', 'realTimeRank'],
+            };
+            attributes.push('realTimeRank');
+        } else if (req.params.period === 'weekly') {
+            where = {
+                [Op.and]: [
+                    { weeklyRank: { [Op.not]: null } },
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } },
+                ]
+            };
+            attributes.push('weeklyRank');
+        } else if (req.params.period === 'monthly') {
+            where = {
+                [Op.and]: [
+                    { monthlyRank: { [Op.not]: null } },
+                    { CategoryId: { [Op.is]: null } },
+                    { SubCategoryId: { [Op.is]: null } },
+                ]
+            };
+            attributes.push('monthlyRank');
+        } else {
+            return res.status(403).send('TOP 100에 대한 기간 parmas가 필요합니다.');
+        }
+        const topPosts = await TopPost.findAll({
+            where: where,
+            attributes: attributes,
             include: [{
                 model: Post,
-            }]
-        });
-        res.status(200).json(realTimeTopPosts);
+                attributes: ['id', 'title', 'createdAt', 'comments', 'likes', 'views'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain', 'label']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },]
+            }],
+            limit: 100,
+        })
+        res.status(200).json(topPosts);
     } catch (error) {
         console.error(error);
         next(error);
-    };
+    }
 });
 
 // [home main page] GET REALTIME TOP 10 // GET /posts/top10RealTime
@@ -61,53 +99,7 @@ router.get('/top10RealTime', async (req, res, next) => {
     };
 });
 
-// GET WEEKLY TOP 100 // GET /posts/top100Weekly
-router.get('/top100Weekly', async (req, res, next) => {
-    try {
-        const weeklyTopPosts = await TopPost.findAll({
-            where: {
-                [Op.and]: [
-                    { weeklyRank: { [Op.not]: null } },
-                    { CategoryId: { [Op.is]: null } },
-                    { SubCategoryId: { [Op.is]: null } },
-                ]
-            },
-            attributes: ['PostId', 'weeklyRank'],
-            include: [{
-                model: Post,
-            }]
-        });
-        res.status(200).json(weeklyTopPosts);
-    } catch (error) {
-        console.error(error);
-        next(error);
-    };
-});
-
-// GET MONTHLY TOP 100 // GET /posts/top100Monthly
-router.get('/top100Monthly', async (req, res, next) => {
-    try {
-        const monthlyTopPosts = await TopPost.findAll({
-            where: {
-                [Op.and]: [
-                    { monthlyRank: { [Op.not]: null } },
-                    { CategoryId: { [Op.is]: null } },
-                    { SubCategoryId: { [Op.is]: null } },
-                ]
-            },
-            attributes: ['PostId', 'monthlyRank'],
-            include: [{
-                model: Post,
-            }]
-        });
-        res.status(200).json(monthlyTopPosts);
-    } catch (error) {
-        console.error(error);
-        next(error);
-    };
-});
-
-// GET CATEGORY REALTIME TOP 5 // GET /posts/:categoryDomain/top5CategoryRealTime
+// [each category main page] GET CATEGORY REALTIME TOP 5 // GET /posts/:categoryDomain/top5CategoryRealTime
 router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
     try {
         const category = await Category.findOne({
@@ -147,7 +139,7 @@ router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
     };
 });
 
-// GET SUBCATEGORY REALTIME TOP 5 // GET /posts/:subCategoryDomain/top5SubCategoryRealTime
+// [each subCategory page] GET SUBCATEGORY REALTIME TOP 5 // GET /posts/:subCategoryDomain/top5SubCategoryRealTime
 router.get('/:subCategoryDomain/top5SubCategoryRealTime', async (req, res, next) => {
     try {
         const subCategory = await SubCategory.findOne({
