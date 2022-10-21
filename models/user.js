@@ -56,6 +56,14 @@ module.exports = class User extends Model {
                 type: DataTypes.DATE,
                 allowNull: true,
             },
+            followers: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            followings: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
         }, {
             modelName: 'User',
             tableName: 'users',

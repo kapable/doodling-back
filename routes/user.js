@@ -158,7 +158,7 @@ router.post(`/logout`, isLoggedIn, (req, res) => {
     res.send('로그아웃 되었습니다!');
 });
 
-// GET USER // GET /user
+// [myInfo] GET USER // GET /user
 /**
  * @openapi
  * /user:
@@ -207,7 +207,7 @@ router.get('/', async (req, res, next) => {
     };
 });
 
-// GET USER ALL INFO // GET /user/:userId
+// [A userInfo] GET USER ALL INFO // GET /user/:userId
 router.get('/:userId', async (req, res, next) => {
     try {
         const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) } });
@@ -249,7 +249,15 @@ router.patch('/:userId/follow', isLoggedIn, async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저를 팔로우 할 수 없습니다!');
         };
-        await user.addFollowers(req.body.id)
+        const me = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) }
+        });
+        if(!me) {
+            return res.status(403).send('팔로우를 하기 위해서는 로그인이 필요합니다!');
+        };
+        await user.addFollowers(req.user.id);
+        await user.increment({ followers: 1 });
+        await me.increment({ followings: 1 });
         res.status(200).json({ id: req.params.userId });
     } catch (error) {
         console.error(error);
@@ -264,7 +272,15 @@ router.delete('/:userId/unfollow', isLoggedIn, async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저를 언팔로우 할 수 없습니다!');
         };
-        await user.removeFollowers(req.body.id)
+        const me = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) }
+        });
+        if(!me) {
+            return res.status(403).send('팔로우를 하기 위해서는 로그인이 필요합니다!');
+        };
+        await user.removeFollowers(req.body.id);
+        await user.increment({ followers: -1 });
+        await me.increment({ followings: -1 });
         res.status(200).json({ id: req.params.userId });
     } catch (error) {
         console.error(error);
@@ -306,7 +322,40 @@ router.get('/:userId/followings', async (req, res, next) => {
     };
 });
 
-// CHANGE NICKNAME // PATCH /user/nickname
+// CHECK NICKNAME DOUBLED // POST /user/nicknameCheck
+router.post(`/nicknameCheck`, async (req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: { nickname: req.body.nickname }
+        });
+        if(!user) {
+            return res.status(201).json({ nickname: req.body.nickname, exist: false });
+        };
+        res.status(201).json({ nickname: req.body.nickname, exist: true });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [profil edit mode] CHANGE NICKNAME AND MBTI // PATCH /user/userInfo
+router.patch(`/userInfo`, isLoggedIn, async (req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: { id: req.user.id }
+        });
+        await user.update({
+            nickname: req.body.nickname,
+            mbti: req.body.mbti,
+        });
+        res.status(201).json({ nickname: req.body.nickname, mbti: req.body.mbti });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [profil] CHECK IS FOLLOWING // POST /user/isFollowing
 /**
  * @openapi
  * /user/nickname:
@@ -331,16 +380,17 @@ router.get('/:userId/followings', async (req, res, next) => {
  *                          example: true
  * 
  */
-router.patch('/nickname', isLoggedIn, async (req, res, next) => {
+router.post('/isFollowing', isLoggedIn, async (req, res, next) => {
     try {
-        User.update({
-            nickname: req.body.nickname,
-        }, {
-            where: {
-                id: req.user.id
-            }
+        const user = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) }
         });
-        res.status(200).json({ nickname: req.body.nickname });
+        const followings = await user.getFollowings({ attributes: ['id'] });
+        const following = followings.find((user) => user.id === parseInt(req.body.targetId, 10))
+        if(!following) {
+            return res.status(201).json({ targetId: req.body.targetId, isFollowing: false });
+        };
+        res.status(201).json({ targetId: req.body.targetId, isFollowing: true });
     } catch (error) {
         console.error(error);
         next(error);
@@ -382,23 +432,6 @@ router.patch('/description', isLoggedIn, async (req, res, next) => {
             }
         });
         res.status(200).json({ description: req.body.description });
-    } catch (error) {
-        console.error(error);
-        next(error);
-    };
-});
-
-// CHANGE MBTI // PATCH /user/mbti
-router.patch('/mbti', isLoggedIn, async (req, res, next) => {
-    try {
-        User.update({
-            mbti: req.body.mbti,
-        }, {
-            where: {
-                id: req.user.id
-            }
-        });
-        res.status(200).json({ mbti: req.body.mbti });
     } catch (error) {
         console.error(error);
         next(error);
