@@ -258,7 +258,7 @@ router.patch('/:userId/follow', isLoggedIn, async (req, res, next) => {
         await user.addFollowers(req.user.id);
         await user.increment({ followers: 1 });
         await me.increment({ followings: 1 });
-        res.status(200).json({ id: req.params.userId });
+        res.status(200).json({ id: req.params.userId, isFollowing: true });
     } catch (error) {
         console.error(error);
         next(error);
@@ -278,10 +278,10 @@ router.delete('/:userId/unfollow', isLoggedIn, async (req, res, next) => {
         if(!me) {
             return res.status(403).send('팔로우를 하기 위해서는 로그인이 필요합니다!');
         };
-        await user.removeFollowers(req.body.id);
+        await user.removeFollowers(req.user.id);
         await user.increment({ followers: -1 });
         await me.increment({ followings: -1 });
-        res.status(200).json({ id: req.params.userId });
+        res.status(200).json({ id: req.params.userId, isFollowing: false });
     } catch (error) {
         console.error(error);
         next(error);
@@ -397,7 +397,7 @@ router.post('/isFollowing', isLoggedIn, async (req, res, next) => {
     };
 });
 
-// CHANGE DESCRIPTION // PATCH /user/description
+// [profil] CHANGE DESCRIPTION // PATCH /user/description
 /**
  * @openapi
  * /user/description:

@@ -362,4 +362,43 @@ router.get('/:categoryDomain/new5SubCategoryPosts', async (req, res, next) => {
     };
 });
 
+// [profile bottom] GET MY WROTE POSTS // get /posts/:userNickname/write
+router.get(`/:userNickname/write`, async (req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: { nickname: req.params.userNickname }
+        });
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저입니다.');
+        };
+        let where = { UserId: parseInt(user.id, 10) };
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
+        const userPosts = await Post.findAll({
+            where: where,
+            limit: 15,
+            order: [["createdAt", 'DESC']],
+            attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            }, {
+                model: SubCategory,
+                attributes: ['id', 'domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'domain'],
+                }]
+            }],
+        });
+        res.status(201).json(userPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+// [profile bottom] GET MY WROTE POSTS // get /posts/:userId/comment
+// [profile bottom] GET MY WROTE POSTS // get /posts/:userId/like
+
 module.exports = router;
