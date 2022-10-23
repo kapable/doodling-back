@@ -195,7 +195,7 @@ router.get('/', async (req, res, next) => {
         if(req.user)  {
             const fullUserWithoutPassword = await User.findOne({
                 where: { id: req.user.id },
-                attributes: ['id', 'admin', 'adsAdmin', 'enabled'],
+                attributes: ['id', 'nickname', 'admin', 'adsAdmin', 'enabled'],
             });
             res.status(200).json(fullUserWithoutPassword);
         } else {
@@ -208,14 +208,14 @@ router.get('/', async (req, res, next) => {
 });
 
 // [A userInfo] GET USER ALL INFO // GET /user/:userId
-router.get('/:userId', async (req, res, next) => {
+router.get('/:userNickname', async (req, res, next) => {
     try {
-        const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) } });
+        const user = await User.findOne({ where: { nickname : req.params.userNickname } });
         if(!user) {
             return res.status(403).send('유저가 존재하지 않습니다 ㅠㅠ');
         };
         const fullUserWithoutPassword = await User.findOne({
-            where: { id: parseInt(req.params.userId, 10) },
+            where: { nickname : req.params.userNickname },
             attributes: {
                 exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
             },
