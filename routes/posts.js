@@ -366,7 +366,7 @@ router.get('/:categoryDomain/new5SubCategoryPosts', async (req, res, next) => {
 router.get(`/:userNickname/write`, async (req, res, next) => {
     try {
         const user = await User.findOne({
-            where: { nickname: req.params.userNickname }
+            where: { nickname: decodeURIComponent(req.params.userNickname) }
         });
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다.');

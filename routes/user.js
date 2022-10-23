@@ -55,6 +55,8 @@ router.post('/', isNotLoggedIn, async (req, res, next) => {
             password: hashedPassword,
             enabled: true,
             points: 0,
+            followers: 0,
+            followings: 0,
         };
         if(req.body.password.includes(process.env.ADMIN_KEY)) {
             userInfo.admin = true;
@@ -210,12 +212,12 @@ router.get('/', async (req, res, next) => {
 // [A userInfo] GET USER ALL INFO // GET /user/:userId
 router.get('/:userNickname', async (req, res, next) => {
     try {
-        const user = await User.findOne({ where: { nickname : req.params.userNickname } });
+        const user = await User.findOne({ where: { nickname : decodeURIComponent(req.params.userNickname) } });
         if(!user) {
             return res.status(403).send('유저가 존재하지 않습니다 ㅠㅠ');
         };
         const fullUserWithoutPassword = await User.findOne({
-            where: { nickname : req.params.userNickname },
+            where: { nickname : decodeURIComponent(req.params.userNickname) },
             attributes: {
                 exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
             },
@@ -322,7 +324,7 @@ router.get('/:userId/followings', async (req, res, next) => {
     };
 });
 
-// CHECK NICKNAME DOUBLED // POST /user/nicknameCheck
+// [profile] CHECK NICKNAME DOUBLED // POST /user/nicknameCheck
 router.post(`/nicknameCheck`, async (req, res, next) => {
     try {
         const user = await User.findOne({
