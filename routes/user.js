@@ -57,6 +57,9 @@ router.post('/', isNotLoggedIn, async (req, res, next) => {
             points: 0,
             followers: 0,
             followings: 0,
+            posts: 0,
+            comments: 0,
+            postLikes: 0,
         };
         if(req.body.password.includes(process.env.ADMIN_KEY)) {
             userInfo.admin = true;
@@ -336,16 +339,32 @@ router.get('/:userNickname/followings', async (req, res, next) => {
     };
 });
 
-// [profile] CHECK NICKNAME DOUBLED // POST /user/nicknameCheck
+// [profile, register] CHECK NICKNAME DOUBLED // POST /user/nicknameCheck
 router.post(`/nicknameCheck`, async (req, res, next) => {
     try {
         const user = await User.findOne({
-            where: { nickname: req.body.nickname }
+            where: { nickname: decodeURIComponent(req.body) }
         });
         if(!user) {
-            return res.status(201).json({ nickname: req.body.nickname, exist: false });
+            return res.status(201).json({ nickname: req.body, exist: false });
         };
-        res.status(201).json({ nickname: req.body.nickname, exist: true });
+        res.status(201).json({ nickname: req.body, exist: true });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [register] CHECK EMAIL DOUBLED // POST /user/emailCheck
+router.post(`/emailCheck`, async (req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: { email: req.body.email }
+        });
+        if(!user) {
+            return res.status(201).json({ email: req.body, exist: false });
+        };
+        res.status(201).json({ email: req.body, exist: true });
     } catch (error) {
         console.error(error);
         next(error);
