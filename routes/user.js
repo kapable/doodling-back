@@ -290,15 +290,21 @@ router.delete('/:userId/unfollow', isLoggedIn, async (req, res, next) => {
     };
 });
 
-// GET FOLLWER LIST // GET /user/1/followers
-router.get('/:userId/followers', async (req, res, next) => {
+// GET FOLLWER LIST // GET /user/john/followers
+router.get('/:userNickname/followers', async (req, res, next) => {
     try {
-        const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) }});
+        const user = await User.findOne({ where: { nickname: decodeURIComponent(req.params.userNickname) }});
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
+        let where = {};
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
         const followers = await user.getFollowers({
             attributes: ['id', 'nickname', 'mbti'],
+            where: where,
+            limit: 10,
         });
         res.status(200).json(followers);
     } catch (error) {
@@ -307,15 +313,21 @@ router.get('/:userId/followers', async (req, res, next) => {
     };
 });
 
-// GET FOLLWING LIST // GET /user/1/followings
-router.get('/:userId/followings', async (req, res, next) => {
+// GET FOLLWING LIST // GET /user/john/followings
+router.get('/:userNickname/followings', async (req, res, next) => {
     try {
-        const user = await User.findOne({ where: { id: parseInt(req.params.userId, 10) }});
+        const user = await User.findOne({ where: { nickname: decodeURIComponent(req.params.userNickname) }});
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
+        let where = {};
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
         const followings = await user.getFollowings({
-            attributes: ['id', 'nickname', 'mbti']
+            attributes: ['id', 'nickname', 'mbti'],
+            where: where,
+            limit: 10,
         });
         res.status(200).json(followings);
     } catch (error) {
