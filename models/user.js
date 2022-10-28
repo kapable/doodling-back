@@ -64,6 +64,19 @@ module.exports = class User extends Model {
                 type: DataTypes.INTEGER,
                 allowNull: false,
             },
+            posts: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            postLikes: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            comments: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+
         }, {
             modelName: 'User',
             tableName: 'users',

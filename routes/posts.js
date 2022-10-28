@@ -1,6 +1,6 @@
 const express = require('express');
 const { Op, fn, col, where } = require("sequelize");
-const { Post, TopPost, SubCategory, Category, User, PostLike, PostView  } = require('../models');
+const { Post, TopPost, SubCategory, Category, User, Comment  } = require('../models');
 const router = express.Router();
 
 // [top100 page] GET TOP 100 WITH PERIOD // GET /posts/top100
@@ -398,7 +398,84 @@ router.get(`/:userNickname/write`, async (req, res, next) => {
         next(error);
     };
 });
-// [profile bottom] GET MY WROTE POSTS // get /posts/:userId/comment
-// [profile bottom] GET MY WROTE POSTS // get /posts/:userId/like
+// [profile bottom] GET MY COMMENT POSTS // get /posts/:userId/comment
+router.get(`/:userId/comment`, async (req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: { id: parseInt(req.params.userId, 10) }
+        });
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저입니다.');
+        };
+        const commentedPosts = await Comment.findAll({
+            where: { UserId: parseInt(req.params.userId, 10)},
+            attributes: [
+                [fn('DISTINCT', col('PostId')), 'PostId']
+            ],
+        });
+        const commentedPostsId = commentedPosts.map((post) => post.PostId);
+        let where = { id: { [Op.in]: commentedPostsId } };
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
+        const userPosts = await Post.findAll({
+            where: where,
+            limit: 15,
+            order: [["createdAt", 'DESC']],
+            attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            }, {
+                model: SubCategory,
+                attributes: ['id', 'domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'domain'],
+                }]
+            }],
+        });
+        res.status(201).json(userPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+// [profile bottom] GET MY LIKE POSTS // get /posts/:userId/like
+router.get(`/:userId/like`, async (req, res, next) => {
+    try {
+        const user = await User.findOne({
+            where: { id: parseInt(req.params.userId, 10) }
+        });
+        if(!user) {
+            return res.status(403).send('존재하지 않는 유저입니다.');
+        };
+        let where = {};
+        if (parseInt(req.query.lastId, 10)) { // for not first loading
+            where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
+        };
+        const userPosts = await user.getPostLiked({
+            where: where,
+            limit: 15,
+            order: [["createdAt", 'DESC']],
+            attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
+            include: [{
+                model: User,
+                attributes: ['id', 'nickname', 'mbti']
+            }, {
+                model: SubCategory,
+                attributes: ['id', 'domain'],
+                include: [{
+                    model: Category,
+                    attributes: ['id', 'domain'],
+                }]
+            }],
+        });
+        res.status(201).json(userPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
 
 module.exports = router;

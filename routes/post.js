@@ -121,6 +121,10 @@ router.post('/', isLoggedIn, async (req, res, next) => {
             likes: 0,
             comments: 0,
         });
+        const user = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+        });
+        await user.increment({ posts: 1 });
         const fullPost = await Post.findOne({
             where: { id: post.id },
             attributes: ['id'],
@@ -292,6 +296,15 @@ router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
             }]
         });
         await post.increment({ comments: 1 });
+        const user = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+        });
+        const exComment = await Comment.findOne({
+            where: { PostId: parseInt(req.params.postId, 10), UserId: parseInt(req.user.id, 10) }
+        });
+        if(!exComment) { // if user not commented before,
+            await user.increment({ comments: 1 });
+        };
         res.status(201).json(fullComment);
     } catch (error) {
         console.error(error);
@@ -401,6 +414,10 @@ router.patch('/:postId/like', isLoggedIn, async (req, res, next) => {
         }
         await likePost.addPostLikers(parseInt(req.user.id, 10));
         await likePost.increment({ likes: 1 });
+        const user = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+        });
+        await user.increment({ postLikes: 1 });
         res.status(200).json({ id: likePost.id, UserId: parseInt(req.user.id, 10) });
     } catch (error) {
         console.error(error);
@@ -417,6 +434,10 @@ router.delete('/:postId/like', isLoggedIn, async (req, res, next) => {
         };
         await likePost.removePostLikers(parseInt(req.user.id, 10));
         await likePost.increment({ likes: -1 });
+        const user = await User.findOne({
+            where: { id: parseInt(req.user.id, 10) },
+        });
+        await user.increment({ postLikes: -1 });
         res.status(200).json({ id: likePost.id, UserId: parseInt(req.user.id, 10) });
     } catch (error) {
         console.error(error);
