@@ -483,18 +483,40 @@ router.patch('/:userId/enable', isLoggedIn, async (req, res, next) => {
         };
 
         const resUser = await User.findOne({
-            where: { id: req.params.userId },
+            where: { id: parseInt(req.params.userId, 10) },
             attributes: ['id', 'nickname']
         },);
         if(!resUser) {
             return res.status(403).send('해당하는 유저가 존재하지 않습니다.');
         }
-        await User.update({
-            enabled: req.body.checked
-        }, {
-            where: { id: resUser.id },
-        },);
-        res.status(200).json(`${resUser.nickname} 님이 활동할 수 ${req.body.checked === true || req.body.checked === 'true'? '있' : '없'}습니다.`);
+        await resUser.update({
+            enabled: req.body.checked,
+        });
+        await Post.update({ enabled: req.body.checked }, { // depends on enabled, all posts' enabled to be true | false
+            where: { UserId: parseInt(req.params.userId, 10) },
+        });
+        const fullUserWithoutPassword = await User.findOne({
+            where: { id: parseInt(req.params.userId, 10) },
+            attributes: {
+                exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
+            },
+            include: [{
+                model: Post,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            }, {
+                model: Comment,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            }, {
+                model: Post,
+                as: 'PostLiked',
+                attributes: ['id']
+            }, {
+                model: Comment,
+                as: 'CommentLiked',
+                attributes: ['id']
+            }]
+        });
+        res.status(200).json(fullUserWithoutPassword);
     } catch (error) {
         console.error(error);
         next(error);
@@ -502,7 +524,7 @@ router.patch('/:userId/enable', isLoggedIn, async (req, res, next) => {
 });
 
 // SET USER ADMIN // PATCH /user/admin
-router.patch('/admin', isLoggedIn, async (req, res, next) => {
+router.patch('/:userId/admin', isLoggedIn, async (req, res, next) => {
     try {
         const reqUser = await User.findOne({
             where: { id: parseInt(req.user.id, 10) },
@@ -519,12 +541,31 @@ router.patch('/admin', isLoggedIn, async (req, res, next) => {
         if(!resUser) {
             return res.status(403).send('해당하는 유저가 존재하지 않습니다.');
         }
-        await User.update({
+        await resUser.update({
             admin: req.body.checked
-        }, {
-            where: { id: resUser.id },
-        },);
-        res.status(200).json(`${resUser.nickname} 님에게 어드민 권한이 ${req.body.checked === true || req.body.checked === 'true'? '부여' : '회수'}되었습니다.`);
+        });
+        const fullUserWithoutPassword = await User.findOne({
+            where: { id: parseInt(req.params.userId, 10) },
+            attributes: {
+                exclude: ['password', 'createdAt', 'updatedAt', 'gender', 'grade', 'points', 'birthDate'],
+            },
+            include: [{
+                model: Post,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            }, {
+                model: Comment,
+                attributes: { exclude: ['createdAt', 'updatedAt'] }
+            }, {
+                model: Post,
+                as: 'PostLiked',
+                attributes: ['id']
+            }, {
+                model: Comment,
+                as: 'CommentLiked',
+                attributes: ['id']
+            }]
+        });
+        res.status(200).json(fullUserWithoutPassword);
     } catch (error) {
         console.error(error);
         next(error);
