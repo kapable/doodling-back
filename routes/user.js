@@ -251,7 +251,7 @@ router.get('/:userNickname', async (req, res, next) => {
 router.patch('/:userId/follow', isLoggedIn, async (req, res, next) => {
     try {
         const user = await User.findOne({ where: { id: req.params.userId }});
-        if(!user) {
+        if(!user || user?.enabled == false) {
             return res.status(403).send('존재하지 않는 유저를 팔로우 할 수 없습니다!');
         };
         const me = await User.findOne({
@@ -274,7 +274,7 @@ router.patch('/:userId/follow', isLoggedIn, async (req, res, next) => {
 router.delete('/:userId/unfollow', isLoggedIn, async (req, res, next) => {
     try {
         const user = await User.findOne({ where: { id: req.params.userId }});
-        if(!user) {
+        if(!user || user?.enabled == false) {
             return res.status(403).send('존재하지 않는 유저를 언팔로우 할 수 없습니다!');
         };
         const me = await User.findOne({
@@ -300,7 +300,7 @@ router.get('/:userNickname/followers', async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
-        let where = {};
+        let where = { enable: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
@@ -323,7 +323,7 @@ router.get('/:userNickname/followings', async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
-        let where = {};
+        let where = { enable: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };

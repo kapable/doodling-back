@@ -168,7 +168,7 @@ router.post('/', isLoggedIn, async (req, res, next) => {
 router.get('/:postId', async (req, res, next) => {
     try {
         const post = await Post.findOne({
-            where: { id: parseInt(req.params.postId, 10) }
+            where: { id: parseInt(req.params.postId, 10), enable: true }
         });
         if(!post) {
             return res.status(403).send('해당 게시글이 존재하지 않습니다ㅠㅠ');
@@ -274,7 +274,7 @@ router.get('/:postId', async (req, res, next) => {
 router.post('/:postId/comment', isLoggedIn, async (req, res, next) => {
     try {
         const post = await Post.findOne({
-            where: { id: parseInt(req.params.postId, 10) }
+            where: { id: parseInt(req.params.postId, 10), enable: true }
         });
         if(!post) {
             return res.status(403).send('존재하지 않는 게시글입니다 ㅠㅠ');
@@ -320,7 +320,7 @@ router.patch('/:postId', isLoggedIn, async (req, res, next) => {
             attributes: ['id' ,'admin'],
         });
         const reqPost = await Post.findOne({
-            where: { id: req.params.postId },
+            where: { id: req.params.postId, enable: true },
             attributes: ['id', 'title', 'UserId'],
         });
         if(!reqPost) {
@@ -408,7 +408,7 @@ router.patch('/:postId/enable', isLoggedIn, async (req, res, next) => {
 // LIKE A POST // PATCH /post/1/like
 router.patch('/:postId/like', isLoggedIn, async (req, res, next) => {
     try {
-        const likePost = await Post.findOne({ where: { id: req.params.postId } });
+        const likePost = await Post.findOne({ where: { id: req.params.postId, enable: true } });
         if(!likePost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         }
@@ -425,10 +425,44 @@ router.patch('/:postId/like', isLoggedIn, async (req, res, next) => {
     };
 });
 
+// [each post & admin page] REMOVE A POST // DELETE /post/1/remove
+router.delete('/:postId/remove', async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10) }
+        });
+        if(!post) {
+            return res.status(403).send('해당 포스트는 존재하지 않습니다.');
+        };
+        await post.update({ enabled: false });
+        res.status(200).json(post);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [each post & admin page] REVIVE A POST // PATCH /post/1/revive
+router.patch('/:postId/revive', async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10) }
+        });
+        if(!post) {
+            return res.status(403).send('해당 포스트는 존재하지 않습니다.');
+        };
+        await post.update({ enabled: true });
+        res.status(200).json(post);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // REMOVE LIKE A POST // DELETE /post/1/like
 router.delete('/:postId/like', isLoggedIn, async (req, res, next) => {
     try {
-        const likePost = await Post.findOne({ where: { id: req.params.postId } });
+        const likePost = await Post.findOne({ where: { id: req.params.postId }, enable: true });
         if(!likePost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
@@ -448,7 +482,7 @@ router.delete('/:postId/like', isLoggedIn, async (req, res, next) => {
 // REPORT A POST // PATCH /post/1/report
 router.patch('/:postId/report', async (req, res, next) => {
     try {
-        const reportedPost = await Post.findOne({ where: { id: req.params.postId } });
+        const reportedPost = await Post.findOne({ where: { id: req.params.postId }, enable: true });
         if(!reportedPost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
@@ -467,7 +501,7 @@ router.patch('/:postId/report', async (req, res, next) => {
 // VIEW A POST // PATCH /post/1/view
 router.patch('/:postId/view', async (req, res, next) => {
     try {
-        const viewedPost = await Post.findOne({ where: { id: req.params.postId } });
+        const viewedPost = await Post.findOne({ where: { id: req.params.postId }, enable: true });
         if(!viewedPost) {
             return res.status(403).send('해당 포스트가 존재하지 않습니다.');
         };
@@ -481,6 +515,29 @@ router.patch('/:postId/view', async (req, res, next) => {
         });
         await viewedPost.increment({ views: 1 });
         res.sendStatus(200);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// CHECK IS MY POST // POST /post/1/checkMine
+router.post(`/:postId/checkMine`, isLoggedIn, async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10) },
+            attributes: ['id', 'UserId', 'enabled'],
+        });
+        if(!post) {
+            return res.status(403).send('해당 게시글은 존재하지 않습니다.');
+        };
+        if(post.enabled == false) {
+            return res.status(403).send('해당 게시글은 삭제된 상태입니다.');
+        };
+        if(post.UserId !== parseInt(req.user.id, 10)) {
+            return res.status(201).json({ isMine: false, postId: post.id });
+        };
+        res.status(201).json({ isMine: true, postId: post.id });
     } catch (error) {
         console.error(error);
         next(error);
