@@ -38,7 +38,7 @@ router.get(`/`, async (req, res, next) => {
 // [top100 page] GET TOP 100 WITH PERIOD // GET /posts/top100
 router.get(`/top100/:period`, async (req, res, next) => {
     try {
-        let where = { enable: true };
+        let where = { enabled: true };
         let attributes = ['PostId'];
         if(req.params.period === 'realtime') {
             where = {
@@ -105,7 +105,7 @@ router.get('/top10RealTime', async (req, res, next) => {
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: { [Op.is]: null } },
                     { SubCategoryId: { [Op.is]: null } },
-                    { enable: true }
+                    { enabled: true }
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
@@ -146,7 +146,7 @@ router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: parseInt(category.id ,10) },
                     { SubCategoryId: { [Op.is]: null } },
-                    { enable: true }
+                    { enabled: true }
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
@@ -187,7 +187,7 @@ router.get('/:subCategoryDomain/top5SubCategoryRealTime', async (req, res, next)
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: { [Op.is]: null } },
                     { SubCategoryId: parseInt(subCategory.id ,10) },
-                    { enable: true }
+                    { enabled: true }
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
@@ -228,7 +228,7 @@ router.get('/:categoryDomain/new15Category', async (req, res, next) => {
             raw: true
         });
         subCategories = subCategories.map(v => v.id);
-        let where = { SubCategoryId: { [Op.in]: subCategories }, enable: true };
+        let where = { SubCategoryId: { [Op.in]: subCategories }, enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
@@ -266,7 +266,7 @@ router.get('/:categoryId/new5Category', async (req, res, next) => {
         });
         subCategories = subCategories.map(v => v.id)
         const categoryNewPosts = await Post.findAll({
-            where: { SubCategoryId: { [Op.in]: subCategories }, enable: true },
+            where: { SubCategoryId: { [Op.in]: subCategories }, enabled: true },
             limit: 15,
             order: [["createdAt", 'DESC']],
             attributes: ['id', 'title', 'createdAt', 'views', 'likes'],
@@ -296,7 +296,7 @@ router.get('/new5Categories', async (req, res, next) => {
         let newContents = []; 
         await Promise.all(categories.map(async (cat) => {
             let new5Contents = await Post.findAll({
-                where: { CategoryId: cat.id, enable: true },
+                where: { CategoryId: cat.id, enabled: true },
                 order: [['createdAt', 'DESC']],
                 limit: 5,
                 attributes: ['id', 'title', 'createdAt'],
@@ -326,7 +326,7 @@ router.get('/:subCategoryDomain/new15SubCategory', async (req, res, next) => {
             attributes: ['id', 'domain'],
             raw: true
         });
-        let where = { SubCategoryId: parseInt(subCategory.id, 10), enable: true };
+        let where = { SubCategoryId: parseInt(subCategory.id, 10), enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
@@ -371,7 +371,7 @@ router.get('/:categoryDomain/new5SubCategoryPosts', async (req, res, next) => {
         await Promise.all(subCategories.map(async (subCat) => {
             if(subCat?.domain !== '') { // filtering 카테고리 전체 
                 let new5Contents = await Post.findAll({
-                    where: { SubCategoryId: subCat.id, enable: true },
+                    where: { SubCategoryId: subCat.id, enabled: true },
                     order: [['createdAt', 'DESC']],
                     limit: 5,
                     attributes: ['id', 'title', 'createdAt'],
@@ -406,7 +406,7 @@ router.get(`/:userNickname/write`, async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다.');
         };
-        let where = { UserId: parseInt(user.id, 10), enable: true };
+        let where = { UserId: parseInt(user.id, 10), enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
@@ -449,7 +449,7 @@ router.get(`/:userId/comment`, async (req, res, next) => {
             ],
         });
         const commentedPostsId = commentedPosts.map((post) => post.PostId);
-        let where = { id: { [Op.in]: commentedPostsId }, enable: true };
+        let where = { id: { [Op.in]: commentedPostsId }, enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
@@ -485,7 +485,7 @@ router.get(`/:userId/like`, async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다.');
         };
-        let where = { enable: true };
+        let where = { enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };

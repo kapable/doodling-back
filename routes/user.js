@@ -300,7 +300,7 @@ router.get('/:userNickname/followers', async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
-        let where = { enable: true };
+        let where = { enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
@@ -323,7 +323,7 @@ router.get('/:userNickname/followings', async (req, res, next) => {
         if(!user) {
             return res.status(403).send('존재하지 않는 유저입니다!');
         };
-        let where = { enable: true };
+        let where = { enabled: true };
         if (parseInt(req.query.lastId, 10)) { // for not first loading
             where.id = { [Op.lt]: parseInt(req.query.lastId, 10)}
         };
