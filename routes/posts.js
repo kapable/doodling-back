@@ -38,7 +38,7 @@ router.get(`/`, async (req, res, next) => {
 // [top100 page] GET TOP 100 WITH PERIOD // GET /posts/top100
 router.get(`/top100/:period`, async (req, res, next) => {
     try {
-        let where = { enabled: true };
+        let where = {};
         let attributes = ['PostId'];
         if(req.params.period === 'realtime') {
             where = {
@@ -105,7 +105,6 @@ router.get('/top10RealTime', async (req, res, next) => {
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: { [Op.is]: null } },
                     { SubCategoryId: { [Op.is]: null } },
-                    { enabled: true }
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
@@ -146,7 +145,6 @@ router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: parseInt(category.id ,10) },
                     { SubCategoryId: { [Op.is]: null } },
-                    { enabled: true }
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
@@ -187,7 +185,6 @@ router.get('/:subCategoryDomain/top5SubCategoryRealTime', async (req, res, next)
                     { realTimeRank: { [Op.not]: null } },
                     { CategoryId: { [Op.is]: null } },
                     { SubCategoryId: parseInt(subCategory.id ,10) },
-                    { enabled: true }
                 ]
             },
             attributes: ['PostId', 'realTimeRank'],
