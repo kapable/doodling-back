@@ -1,7 +1,34 @@
 const express = require('express');
 const { Op, fn, col, where } = require("sequelize");
 const { Post, TopPost, SubCategory, Category, User, Comment  } = require('../models');
+const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
+
+
+// [admin posts] GET ALL POSTS // GET /posts
+router.get(`/`, isLoggedIn, async (req, res, next) => {
+    try {
+        const posts = await Post.findAll({
+            attributes: ['id', 'title', 'createdAt'],
+            include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain', 'label']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },],
+            limit: 100,
+            order: [['createdAt', 'DESC']],
+        });
+        res.status(201).json(posts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
 
 // [top100 page] GET TOP 100 WITH PERIOD // GET /posts/top100
 router.get(`/top100/:period`, async (req, res, next) => {
