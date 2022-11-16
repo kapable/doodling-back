@@ -1,6 +1,6 @@
 const express = require('express');
 const { Op } = require('sequelize');
-const { Comment, Post, User  } = require('../models');
+const { Comment, Post, User, ReComment  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
@@ -87,13 +87,12 @@ router.post('/:commentId/reComment', isLoggedIn, async (req, res, next) => {
         if(!post) {
             return res.status(403).send('존재하지 않는 게시글입니다 ㅠㅠ');
         };
-        const reComment = await Comment.create({
+        const reComment = await ReComment.create({
             text: req.body.text,
-            UserId: req.body.id,
-            PostId: parseInt(req.body.postId, 10),
-            ReCommentId: parseInt(req.params.commentId, 10)
+            UserId: req.user.id,
+            CommentId: parseInt(req.params.commentId, 10),
         });
-        const fullReComment = await Comment.findOne({
+        const fullReComment = await ReComment.findOne({
             where: { id: reComment.id },
             include: [{
                 model: User,

@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const multerS3 = require('multer-s3');
 const AWS = require('aws-sdk');
-const { Comment, Post, SubCategory, User, PostReport, PostView, Category, PostLike  } = require('../models');
+const { Comment, Post, SubCategory, User, PostReport, PostView, Category, PostLike, ReComment  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
@@ -191,13 +191,12 @@ router.get('/:postId', async (req, res, next) => {
                     model: User,
                     attributes: ['id', 'nickname', 'mbti'],
                 }, {
-                    model: Comment,
-                    as: 'ReComment',
+                    model: ReComment,
                     include: [{
                         model: User,
                         attributes: ['id', 'nickname', 'mbti']
-                    }]
-                }, {
+                    },]
+                } ,{
                     model: User,
                     as: 'CommentLikers',
                     attributes: ['id']
