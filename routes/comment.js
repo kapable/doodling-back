@@ -4,6 +4,25 @@ const { Comment, Post, User  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
+// REMOVE A COMMENT // DELETE /commnet/1
+router.delete(`/:commentId`, async (req, res, next) => {
+    try {
+        const comment = await Comment.findOne({
+            where: { id: parseInt(req.params.commentId ,10) }
+        });
+        if(!comment) {
+            return res.status(403).send('이미 존재하지 않는 댓글입니다.');
+        };
+        await Comment.destroy({
+            where: { id: parseInt(req.params.commentId ,10) }
+        });
+        res.status(200).json({ commentId: parseInt(req.params.commentId ,10) });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    }
+});
+
 // ADD RE-COMMENT // POST /comment/1/reComment
 /**
  * @openapi
