@@ -195,7 +195,10 @@ router.get('/:postId', async (req, res, next) => {
                     include: [{
                         model: User,
                         attributes: ['id', 'nickname', 'mbti']
-                    },]
+                    },],
+                    order: [
+                        ['createdAt', 'DESC']
+                    ],
                 } ,{
                     model: User,
                     as: 'CommentLikers',

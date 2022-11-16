@@ -106,6 +106,25 @@ router.post('/:commentId/reComment', isLoggedIn, async (req, res, next) => {
     };
 });
 
+// REMOVE RE-COMMENT // DELETE /comment/1/reComment/2
+router.delete(`/:commentId/reComment/:reCommentId`, isLoggedIn, async (req, res, next) => {
+    try {
+        const exComment = await Comment.findOne({
+            where: { id: parseInt(req.params.commentId, 10) }
+        });
+        if(!exComment) {
+            return res.status(403).send("해당하는 댓글이 존재하지 않습니다 ㅠㅠ");
+        };
+        await ReComment.destroy({
+            where: { id: parseInt(req.params.reCommentId, 10) }
+        });
+        res.status(200).json({ commentId: parseInt(req.params.commentId, 10) , reCommentId: parseInt(req.params.reCommentId, 10) })
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // LIKE A COMMENT // PATCH /comment/1/like
 router.patch('/:commentId/like', isLoggedIn, async (req, res, next) => {
     try {
