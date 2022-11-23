@@ -12,7 +12,7 @@ const realTimeTask = new Task(
     async () => {
         // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
         const totalScores = {};
-        const minutesAgo = new Date(new Date - MINUTES * 60000);
+        const minutesAgo = new Date(new Date - MINUTES * 600000000);
         const viewScore = await PostView.findAll({
             where: { 
                 createdAt: {
@@ -72,7 +72,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ minutes: MINUTES, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ seconds: 30, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
