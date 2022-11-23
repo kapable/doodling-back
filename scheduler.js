@@ -72,7 +72,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ seconds: 30, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ minutes: 30, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
