@@ -2,7 +2,7 @@ const { ToadScheduler, SimpleIntervalJob, AsyncTask, Task } = require('toad-sche
 const { Post, PostView, TopPost, Comment, PostLike, Category, SubCategory } = require('./models');
 const { Op } = require('sequelize');
 
-const MINUTES = 3000;
+const MINUTES = 5;
 
 const scheduler = new ToadScheduler();
 // Total
@@ -72,7 +72,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ seconds: MINUTES, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ minutes: MINUTES, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
