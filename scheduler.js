@@ -1,8 +1,9 @@
 const { ToadScheduler, SimpleIntervalJob, AsyncTask, Task } = require('toad-scheduler');
-const { Post, PostView, TopPost, Comment, PostLike, Category, SubCategory } = require('./models');
+const { PostView, TopPost, Comment, PostLike, Category, SubCategory } = require('./models');
 const { Op } = require('sequelize');
 
-const MINUTES = 5;
+const MINUTES = 30;
+const A_DAY = 24 * 3600 * 1000;
 
 const scheduler = new ToadScheduler();
 // Total
@@ -12,11 +13,11 @@ const realTimeTask = new Task(
     async () => {
         // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
         const totalScores = {};
-        const minutesAgo = new Date(new Date - MINUTES * 600000000);
+        const aWeekAgo = new Date(new Date - A_DAY * 7); // after, convert to a_day_ago with many view volumes
         const viewScore = await PostView.findAll({
             where: { 
                 createdAt: {
-                    [Op.gte]: minutesAgo,
+                    [Op.gte]: aWeekAgo,
                     [Op.lte]: new Date()
                 }
             },
@@ -72,7 +73,7 @@ const realTimeTask = new Task(
     (error) => { return console.error(error) }
 );
 
-const realTimeJob = new SimpleIntervalJob({ minutes: 30, }, realTimeTask);
+const realTimeJob = new SimpleIntervalJob({ minutes: MINUTES, }, realTimeTask);
 
 // 주간 Top POSTS
 const weeklyTask = new Task(
@@ -225,12 +226,12 @@ const categoryRealTimeTask = new Task(
         categories.map(async (cat) => {
             // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
             const totalScores = {};
-            const minutesAgo = new Date(new Date - MINUTES * 60000);
+            const aWeekAgo = new Date(new Date - A_DAY * 7);
             const viewScore = await PostView.findAll({
                 where: {
                     CategoryId: cat, // for loop
                     createdAt: {
-                        [Op.gte]: minutesAgo,
+                        [Op.gte]: aWeekAgo,
                         [Op.lte]: new Date()
                     }
                 },
@@ -299,12 +300,12 @@ const subCategoryRealTimeTask = new Task(
         subCategories.map(async (cat) => {
             // 조회수 / 댓글수 / 좋아요수 세가지 조건에 따라 각 점수(개수)를 취합
             const totalScores = {};
-            const minutesAgo = new Date(new Date - MINUTES * 60000);
+            const aWeekAgo = new Date(new Date - A_DAY * 7);
             const viewScore = await PostView.findAll({
                 where: {
                     SubCategoryId: cat, // for loop
                     createdAt: {
-                        [Op.gte]: minutesAgo,
+                        [Op.gte]: aWeekAgo,
                         [Op.lte]: new Date()
                     }
                 },
