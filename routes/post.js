@@ -8,7 +8,6 @@ const AWS = require('aws-sdk');
 const { Comment, Post, SubCategory, User, PostReport, PostView, Category, PostLike, ReComment  } = require('../models');
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
-const convert = require("heic-convert");
 
 try {
     fs.accessSync('uploads');
@@ -41,7 +40,6 @@ const upload = multer({
             done(null, 'uploads');
         },
         filename(req, file, done) {
-            console.log(typeof file);
             const ext = path.extname(file.originalname);
             const basename = Buffer.from(path.basename(file.originalname, ext), 'latin1').toString('utf8').replace(/[`\s~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '');
             done(null, basename + '_' + new Date().getTime() + ext);
