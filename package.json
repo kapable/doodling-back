@@ -22,6 +22,7 @@
     "express": "^4.18.1",
     "express-session": "^1.17.3",
     "fs": "^0.0.1-security",
+    "heic-convert": "^1.2.4",
     "helmet": "^6.0.0",
     "hpp": "^0.2.3",
     "morgan": "^1.10.0",
