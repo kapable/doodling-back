@@ -33,7 +33,7 @@ const upload = multer({
         },
         contentType(req, file, cb) {
             const extension = path.extname(file.originalname).replace('.','');
-            cb(null, `image/${extension === '.heic' ? '.jpeg' : extension}`);
+            cb(null, `image/${extension}`);
         },
     }) : multer.diskStorage({
         destination(req, file, done) {
@@ -41,7 +41,7 @@ const upload = multer({
         },
         filename(req, file, done) {
             const ext = path.extname(file.originalname);
-            const basename = Buffer.from(path.basename(file.originalname, ext === '.heic' ? '.jpeg' : ext), 'latin1').toString('utf8').replace(/[`\s~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '');
+            const basename = Buffer.from(path.basename(file.originalname, ext), 'latin1').toString('utf8').replace(/[`\s~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/g, '');
             done(null, basename + '_' + new Date().getTime() + ext);
         },
     }),
