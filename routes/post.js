@@ -34,7 +34,7 @@ const upload = multer({
         },
         contentType(req, file, cb) {
             const extension = path.extname(file.originalname).replace('.','');
-            cb(null, `image/${extension === 'heic' ? 'jpeg' : extension}`);
+            cb(null, `image/${extension}`);
         },
     }) : multer.diskStorage({
         destination(req, file, done) {
