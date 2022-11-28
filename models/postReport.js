@@ -4,10 +4,6 @@ const { Model } = DataTypes;
 module.exports = class PostReport extends Model {
     static init(sequelize) {
         return super.init({
-            label: {
-                type: DataTypes.INTEGER,
-                allowNull: false,
-            },
         }, {
             modelName: "PostReport",
             tableName: "PostReport",
@@ -19,5 +15,6 @@ module.exports = class PostReport extends Model {
     static associate(db) {
         db.PostReport.belongsTo(db.Post);
         db.PostReport.belongsTo(db.User);
+        db.PostReport.belongsTo(db.ReportLabel);
     };
 };

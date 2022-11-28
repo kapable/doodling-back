@@ -17,6 +17,7 @@ const postsRouter = require('./routes/posts');
 const postRouter = require('./routes/post');
 const commentRouter = require('./routes/comment');
 const userRouter = require('./routes/user');
+const reportRouter = require('./routes/report');
 const categoryRouter = require('./routes/category');
 const subCategoryRouter = require('./routes/subCategory');
 
@@ -84,6 +85,7 @@ app.use('/post', postRouter);
 app.use('/posts', postsRouter);
 app.use('/comment', commentRouter);
 app.use('/user', userRouter);
+app.use('/report', reportRouter);
 app.use('/category', categoryRouter);
 app.use('/subCategory', subCategoryRouter);
 
