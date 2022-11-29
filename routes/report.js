@@ -78,4 +78,17 @@ router.get(`/`, isLoggedIn, async (req, res, next) => {
     };
 });
 
+// [article & admin] GET ALL REPORT LABELS // GET /report/labels
+router.get(`/labels`, isLoggedIn, async (req, res, next) => {
+    try {
+        const reportLabels = await ReportLabel.findAll({
+            attributes: { exclude: ['createdAt', 'updatedAt'] }
+        });
+        res.status(201).json({ reportLabels });
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 module.exports = router;
