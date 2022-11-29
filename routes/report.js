@@ -4,6 +4,25 @@ const { Post, User, PostReport, ReportLabel, SubCategory, Category } = require('
 const { isLoggedIn } = require('./middlewares');
 const router = express.Router();
 
+// [admin] ADD REPORT LABELS // POST /report/label
+router.post(`/label`, isLoggedIn, async (req, res, next) => {
+    try {
+        const exLabel = await ReportLabel.findOne({
+            where: { label: req.body.label }
+        });
+        if(exLabel) {
+            return res.status(403).send('이미 존재하는 신고 레이블입니다.');
+        };
+        const newLabel = await ReportLabel.create({
+            label: req.body.label,
+        });
+        res.status(200).json(newLabel);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // [article page] REPORT AN ARTICLE // POST /report/1
 router.post(`/:postId`, isLoggedIn, async (req, res, next) => {
     try {
@@ -19,25 +38,6 @@ router.post(`/:postId`, isLoggedIn, async (req, res, next) => {
             ReportLabelId: parseInt(req.body.labelId, 10),
         });
         res.status(200).json({ postId: req.params.postId, report: true });
-    } catch (error) {
-        console.error(error);
-        next(error);
-    };
-});
-
-// [admin] ADD REPORT LABELS // POST /report/label
-router.post(`/label`, isLoggedIn, async (req, res, next) => {
-    try {
-        const exLabel = await ReportLabel.findOne({
-            where: { label: req.body.label }
-        });
-        if(!exLabel) {
-            return res.status(403).send('이미 존재하는 신고 레이블입니다.');
-        };
-        const newLabel = await ReportLabel.create({
-            label: req.body.label,
-        });
-        res.status(200).json(newLabel);
     } catch (error) {
         console.error(error);
         next(error);
@@ -79,12 +79,12 @@ router.get(`/`, isLoggedIn, async (req, res, next) => {
 });
 
 // [article & admin] GET ALL REPORT LABELS // GET /report/labels
-router.get(`/labels`, isLoggedIn, async (req, res, next) => {
+router.get(`/labels`, async (req, res, next) => {
     try {
         const reportLabels = await ReportLabel.findAll({
             attributes: { exclude: ['createdAt', 'updatedAt'] }
         });
-        res.status(201).json({ reportLabels });
+        res.status(201).json(reportLabels);
     } catch (error) {
         console.error(error);
         next(error);
