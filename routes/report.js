@@ -32,10 +32,13 @@ router.post(`/:postId`, isLoggedIn, async (req, res, next) => {
         if(!post) {
             return res.status(403).send('존재하지 않는 게시글입니다.');
         };
+        const selectedLabel = await ReportLabel.findOne({
+            where: { label: req.body.label }
+        });
         await PostReport.create({
             PostId: parseInt(req.params.postId, 10),
             UserId: parseInt(req.user.id, 10),
-            ReportLabelId: parseInt(req.body.labelId, 10),
+            ReportLabelId: parseInt(selectedLabel.id, 10),
         });
         res.status(200).json({ postId: req.params.postId, report: true });
     } catch (error) {
