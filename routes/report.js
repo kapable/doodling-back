@@ -56,12 +56,14 @@ router.get(`/`, isLoggedIn, async (req, res, next) => {
         };
         const posts = await PostReport.findAll({
             where: where,
+            attributes: { exclude: ['RerportLabelId', 'PostId', 'UserId', 'updatedAt'] },
             include: [{
                 model: User,
                 attributes: ['id', 'nickname']
             }, {
                 model: Post,
-                attributes: ['id'],
+                where: { enabled: true },
+                attributes: ['id', 'title'],
                 include: [{
                     model: SubCategory,
                     attributes: ['id', 'domain', 'label'],
@@ -70,6 +72,9 @@ router.get(`/`, isLoggedIn, async (req, res, next) => {
                         attributes: ['id', 'domain', 'label']
                     }]
                 }]
+            }, {
+                model: ReportLabel,
+                attributes: ['id', 'label']
             }],
             limit: 15,
             order: [['createdAt', 'DESC']],

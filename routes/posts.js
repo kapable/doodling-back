@@ -130,40 +130,36 @@ router.get('/top10RealTime', async (req, res, next) => {
     };
 });
 
-// [each category main page] GET CATEGORY REALTIME TOP 5 // GET /posts/:categoryDomain/top5CategoryRealTime
-router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
+// [main home page] GET CATEGORY NEW 5 POSTS // GET /posts/new5Categories
+router.get('/new5Categories', async (req, res, next) => {
     try {
-        const category = await Category.findOne({
-            where: { domain: req.params.categoryDomain },
-            attributes: ['id'],
-            raw: true
+        const categories = await Category.findAll({
+            where: { [Op.and]: [
+                { domain: { [Op.not]: '' } },
+                { domain: { [Op.not]: 'top100' } },
+            ]},
+            attributes: ['id', 'label', 'domain'],
+            raw: true,
         });
-        const categoryRealTimeTopPosts = await TopPost.findAll({
-            where: {
-                [Op.and]: [
-                    { realTimeRank: { [Op.not]: null } },
-                    { CategoryId: parseInt(category.id ,10) },
-                    { SubCategoryId: { [Op.is]: null } },
-                ]
-            },
-            attributes: ['PostId', 'realTimeRank'],
-            include: [{
-                model: Post,
-                attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
-                    include: [{
-                        model: User,
-                        attributes: ['id', 'nickname', 'mbti']
-                    }, {
-                        model: Category,
-                        attributes: ['id', 'domain', 'label']
-                    }, {
-                        model: SubCategory,
-                        attributes: ['id', 'domain']
-                    },]
-            }],
-            limit: 5,
-        });
-        res.status(200).json(categoryRealTimeTopPosts);
+        let newContents = []; 
+        await Promise.all(categories.map(async (cat) => {
+            let new5Contents = await Post.findAll({
+                where: { CategoryId: cat.id, enabled: true },
+                order: [['createdAt', 'DESC']],
+                limit: 5,
+                attributes: ['id', 'title', 'createdAt'],
+                include: [{
+                    model: User,
+                    attributes: ['id', 'nickname', 'mbti']
+                }, {
+                    model: SubCategory,
+                    attributes: ['id', 'domain']
+                }],
+                raw: true,
+            });
+            return newContents.push({ id: cat.id, label: cat.label, domain: cat.domain, posts: new5Contents });
+        }));
+        res.status(200).json(newContents);
     } catch (error) {
         console.error(error);
         next(error);
@@ -252,6 +248,46 @@ router.get('/:categoryDomain/new15Category', async (req, res, next) => {
     };
 });
 
+// [each category main page] GET CATEGORY REALTIME TOP 5 // GET /posts/:categoryDomain/top5CategoryRealTime
+router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
+    try {
+        const category = await Category.findOne({
+            where: { domain: req.params.categoryDomain },
+            attributes: ['id'],
+            raw: true
+        });
+        const categoryRealTimeTopPosts = await TopPost.findAll({
+            where: {
+                [Op.and]: [
+                    { realTimeRank: { [Op.not]: null } },
+                    { CategoryId: parseInt(category.id ,10) },
+                    { SubCategoryId: { [Op.is]: null } },
+                ]
+            },
+            attributes: ['PostId', 'realTimeRank'],
+            include: [{
+                model: Post,
+                attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'nickname', 'mbti']
+                    }, {
+                        model: Category,
+                        attributes: ['id', 'domain', 'label']
+                    }, {
+                        model: SubCategory,
+                        attributes: ['id', 'domain']
+                    },]
+            }],
+            limit: 5,
+        });
+        res.status(200).json(categoryRealTimeTopPosts);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 // GET CATEGORY NEW 5 POSTS // GET /posts/:categoryId/new5Category
 router.get('/:categoryId/new5Category', async (req, res, next) => {
     try {
@@ -272,42 +308,6 @@ router.get('/:categoryId/new5Category', async (req, res, next) => {
             },],
         });
         res.status(200).json(categoryNewPosts);
-    } catch (error) {
-        console.error(error);
-        next(error);
-    };
-});
-
-// [main home page] GET CATEGORY NEW 5 POSTS // GET /posts/new5Categories
-router.get('/new5Categories', async (req, res, next) => {
-    try {
-        const categories = await Category.findAll({
-            where: { [Op.and]: [
-                { domain: { [Op.not]: '' } },
-                { domain: { [Op.not]: 'top100' } },
-            ]},
-            attributes: ['id', 'label', 'domain'],
-            raw: true,
-        });
-        let newContents = []; 
-        await Promise.all(categories.map(async (cat) => {
-            let new5Contents = await Post.findAll({
-                where: { CategoryId: cat.id, enabled: true },
-                order: [['createdAt', 'DESC']],
-                limit: 5,
-                attributes: ['id', 'title', 'createdAt'],
-                include: [{
-                    model: User,
-                    attributes: ['id', 'nickname', 'mbti']
-                }, {
-                    model: SubCategory,
-                    attributes: ['id', 'domain']
-                }],
-                raw: true,
-            });
-            return newContents.push({ id: cat.id, label: cat.label, domain: cat.domain, posts: new5Contents });
-        }));
-        res.status(200).json(newContents);
     } catch (error) {
         console.error(error);
         next(error);
