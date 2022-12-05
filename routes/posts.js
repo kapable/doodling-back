@@ -3,7 +3,6 @@ const { Op, fn, col, where } = require("sequelize");
 const { Post, TopPost, SubCategory, Category, User, Comment  } = require('../models');
 const router = express.Router();
 
-
 // [admin posts] GET ALL POSTS // GET /posts
 router.get(`/`, async (req, res, next) => {
     try {
@@ -74,6 +73,7 @@ router.get(`/top100/:period`, async (req, res, next) => {
             attributes: attributes,
             include: [{
                 model: Post,
+                where: { enabled: true },
                 attributes: ['id', 'title', 'createdAt', 'comments', 'likes', 'views'],
                     include: [{
                         model: User,
@@ -109,6 +109,7 @@ router.get('/top10RealTime', async (req, res, next) => {
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
+                where: { enabled: true },
                 attributes: ['id', 'title', 'createdAt', 'comments'],
                     include: [{
                         model: User,
@@ -185,6 +186,7 @@ router.get('/:subCategoryDomain/top5SubCategoryRealTime', async (req, res, next)
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
+                where: { enabled: true },
                 attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
                     include: [{
                         model: User,
@@ -267,6 +269,7 @@ router.get('/:categoryDomain/top5CategoryRealTime', async (req, res, next) => {
             attributes: ['PostId', 'realTimeRank'],
             include: [{
                 model: Post,
+                where: { enabled: true },
                 attributes: ['id', 'title', 'createdAt', 'views', 'likes', 'comments'],
                     include: [{
                         model: User,
@@ -429,6 +432,7 @@ router.get(`/:userNickname/write`, async (req, res, next) => {
         next(error);
     };
 });
+
 // [profile bottom] GET MY COMMENT POSTS // get /posts/:userId/comment
 router.get(`/:userId/comment`, async (req, res, next) => {
     try {
@@ -472,6 +476,7 @@ router.get(`/:userId/comment`, async (req, res, next) => {
         next(error);
     };
 });
+
 // [profile bottom] GET MY LIKE POSTS // get /posts/:userId/like
 router.get(`/:userId/like`, async (req, res, next) => {
     try {

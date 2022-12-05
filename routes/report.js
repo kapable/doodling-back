@@ -99,4 +99,43 @@ router.get(`/labels`, async (req, res, next) => {
     };
 });
 
+// [admin page] REMOVE A POST // DELETE /report/1/remove
+router.delete('/:postId/remove', async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId, 10) }
+        });
+        if(!post) {
+            return res.status(403).send('해당 포스트는 존재하지 않습니다.');
+        };
+        await post.update({ enabled: false });
+        await PostReport.destroy({
+            where: { PostId: parseInt(post.id, 10) }
+        });
+        res.status(200).json(post);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
+// [admin page] CLEARING A NOT ABUSING POST // DELETE /report/1/clear
+router.delete(`/:postId/clear`, async (req, res, next) => {
+    try {
+        const post = await Post.findOne({
+            where: { id: parseInt(req.params.postId ,10) }
+        });
+        if(!post) {
+            return res.status(403).send("헤당 포스트는 존재하지 않습니다.");
+        };
+        await PostReport.destroy({
+            where: { PostId: parseInt(post.id, 10)}
+        });
+        res.status(200).json(post);
+    } catch (error) {
+        console.error(error);
+        next(error);
+    };
+});
+
 module.exports = router;
