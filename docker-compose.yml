@@ -1,7 +1,7 @@
 version: '3'
 services:
   backend:
-    image: cookierocket/doodling-back
+    image: kapable/doodling-back
     environment:
       RDS_USERNAME: ${RDS_USERNAME}
       RDS_HOST: ${RDS_HOST}
